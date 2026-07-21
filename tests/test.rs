@@ -428,6 +428,45 @@ fn test_debug_formatting() {
 }
 
 #[test]
+#[should_panic(expected = "n() called on an atom")]
+fn test_atom_n_panic() {
+    let f = kf(1.0);
+    let _ = f.n();
+}
+
+#[test]
+#[should_panic(expected = "Slicing method called on an atom")]
+fn test_atom_slice_panic() {
+    let f = kf(1.0);
+    let _ = f.kF();
+}
+
+#[test]
+#[should_panic(expected = "n() called on a table")]
+fn test_table_n_panic() {
+    let keys = ktn(KS, 1);
+    keys.kS()[0] = ss("col1");
+    let col = ktn(KI, 5);
+    let vals = ktn(0, 1);
+    vals.kK()[0] = col;
+    let table = xT(xD(keys, vals));
+    let _ = table.n();
+}
+
+#[test]
+#[should_panic(expected = "Slicing method called on a table")]
+fn test_table_slice_panic() {
+    let keys = ktn(KS, 1);
+    keys.kS()[0] = ss("col1");
+    let col = ktn(KI, 5);
+    let vals = ktn(0, 1);
+    vals.kK()[0] = col;
+    let table = xT(xD(keys, vals));
+    let _ = table.kK();
+}
+
+
+#[test]
 fn test_ffi_integration() {
     // 1. Compile the FFI example in release mode so it's ready to be loaded by q
     let build_status = Command::new("cargo")

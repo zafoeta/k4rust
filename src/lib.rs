@@ -226,8 +226,9 @@ impl K {
         if self.0.is_null() { 0 } else { unsafe { (*self.0).t } }
     }
 
+    #[inline(always)]
     pub fn len(&self) -> usize {
-        if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.list.n as usize } }
+        self.n() as usize
     }
 
     #[inline(always)]
@@ -237,7 +238,18 @@ impl K {
 
     #[inline(always)]
     pub fn n(&self) -> i64 {
-        if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.list.n } }
+        if self.0.is_null() {
+            0
+        } else {
+            let t = self.t();
+            if t < 0 {
+                panic!("n() called on an atom (type {}). Atoms do not have a length.", t);
+            }
+            if t == 98 {
+                panic!("n() called on a table (type 98). Use table-specific methods to get row count.");
+            }
+            unsafe { (*self.0).union_data.list.n }
+        }
     }
 
     #[inline(always)]
@@ -271,6 +283,13 @@ impl K {
     unsafe fn as_slice_mut_unchecked<T>(&self) -> &mut [T] {
         if self.0.is_null() {
             return &mut [];
+        }
+        let t = self.t();
+        if t < 0 && t != -2 {
+            panic!("Slicing method called on an atom (type {}). Atoms cannot be sliced.", t);
+        }
+        if t == 98 {
+            panic!("Slicing method called on a table (type 98). Tables cannot be sliced directly.");
         }
         unsafe {
             let ptr = (*self.0).union_data.list.G0.as_ptr() as *mut T;
