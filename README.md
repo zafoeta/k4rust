@@ -71,6 +71,29 @@ k4rust_api! {
 
 ---
 
+## Memory Management & Reference Counting
+
+While `k4rust` handles most memory management automatically, understanding how it maps to KDB+'s raw FFI is essential:
+
+### 1. Automatic Memory Management (`r0`)
+Under the hood, `K` implements the `Drop` trait. When a local `K` object (such as a temporary list or vector) goes out of scope, Rust automatically calls `r0` to decrement its reference count and release the memory. This guarantees that early exits (e.g., returning `krr("type")`) never leak memory.
+
+### 2. Compile-Time Safe Reference Counting (`r1`)
+When KDB+ calls your FFI function, it retains ownership of the input parameters (`x`, `y`). To ensure safety, `k4rust_api!` maps FFI inputs as read-only borrowed references (`&K`) instead of owned values.
+
+If your function needs to return one of the input parameters directly, or store it in another container (like a dictionary or list), you must increment its reference count. In Rust, you simply call `.clone()`:
+
+```rust
+pub fn return_input_if_valid(x: K, y: K) -> K {
+    if x.n() <= 0 { return krr("length"); }
+    y.clone() // Calls r1 under the hood to safely extend the lifetime
+}
+```
+
+If you attempt to return `y` directly without cloning, the compiler will catch it at compile-time (`Expected struct K, found &K`), preventing use-after-free or double-free runtime segfaults that are common in C extensions.
+
+---
+
 ## Safe IPC Client (`IpcClient`)
 
 In addition to writing library extensions loaded *inside* a `q` process, `k4rust` supports standalone client executables connecting *to* a remote `q` server. The `IpcClient` struct provides a type-safe, RAII-based connection manager that automatically closes socket descriptors when dropped:
