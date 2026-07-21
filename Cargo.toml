@@ -21,3 +21,7 @@ name = "k4rust_test_ffi"
 crate-type = ["cdylib"]
 path = "tests/ffi/k4rust_test_ffi.rs"
 
+[[example]]
+name = "k4rust_ipc_example"
+path = "examples/k4rust_ipc_example.rs"
+
