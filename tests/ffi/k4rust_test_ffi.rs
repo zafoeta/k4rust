@@ -432,8 +432,8 @@ k4rust_api! {
     // No loop — inline is fine.
     pub fn package_results(x: K, y: K) -> K {
         let res = ktn(0, 2);
-        res.kK()[0] = x.clone();
-        res.kK()[1] = y.clone();
+        res.kK()[0] = r1(x);
+        res.kK()[1] = r1(y);
         res
     }
 
@@ -469,7 +469,7 @@ k4rust_api! {
         let keys = ktn(KS, 1);
         let vals = ktn(KI, 1);
         let dict = xD(keys, vals);
-        let _tbl = xT(dict.clone());
+        let _tbl = xT(r1(&dict));
         let _simple_tbl = ktd(dict);
 
         let _ser = b9(1, &x);
@@ -492,7 +492,7 @@ k4rust_api! {
         let _e2 = k2(0, "{x+y}", ki(1), ki(2));
         let _e3 = k3(0, "{x+y+z}", ki(1), ki(2), ki(3));
 
-        x.clone()
+        r1(x)
     }
 
     // FFI entry point: Test b9 serialization
