@@ -88,8 +88,8 @@ fn query_kdb() -> Result<(), String> {
 
     // Evaluate queries with dynamic arity (e.g. 4 parameters known only at runtime)
     let args = vec![ki(10), ki(20), ki(30), ki(40)];
-    let result_dyn: K = client.query("{[a;b;c;d] a+b+c+d}", args);
-    println!("Dynamic Result: {}", result_dyn.i());
+    let res: K = client.query("{[a;b;c;d] a+b+c+d}", args);
+    println!("Dynamic Result: {}", res.i());
 
     Ok(())
 } // client goes out of scope here; kclose(handle) is automatically called
