@@ -1,0 +1,23 @@
+[package]
+name = "k4rust"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+
+[workspace]
+members = ["."]
+
+[[example]]
+name = "k4rust_usage"
+crate-type = ["cdylib"]
+path = "examples/k4rust_usage.rs"
+
+[[example]]
+name = "k4rust_test_ffi"
+crate-type = ["cdylib"]
+path = "tests/ffi/k4rust_test_ffi.rs"
+
