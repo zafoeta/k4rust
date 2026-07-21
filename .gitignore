@@ -7,4 +7,4 @@
 *.dll
 *.rlib
 /src/k.h
-
+/benches/
