@@ -1,4 +1,4 @@
-/ run_tests.q
+/ test.q
 
 / Dynamically resolve library path relative to this script
 path: string .z.f;
