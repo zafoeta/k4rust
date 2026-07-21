@@ -9,14 +9,19 @@ fn main() -> Result<(), String> {
 
     // 1. Establish connection to local KDB+ process.
     // Ensure you have a q process running on port 50005: `q -p 50005`
-    let c = match IpcClient::connect("127.0.0.1", 50005) {
+    // We use the builder pattern here to customize options like connection timeout
+    let c = match IpcClient::builder("127.0.0.1", 50005)
+        .creds("username:password")
+        .timeout(5000)
+        .connect()
+    {
         Ok(conn) => conn,
         Err(e) => {
             println!("Connection failed: {e}. Please ensure `q -p 50005` is running.");
             return Err(e);
         }
     };
-    println!("Successfully connected! (handle = {})", c.handle());
+    println!("Successfully connected via Builder! (handle = {})", c.handle());
 
     // 2. Evaluate queries with 0 to 3 parameters.
     println!("\n--- Standard Evaluations ---");

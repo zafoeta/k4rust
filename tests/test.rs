@@ -76,9 +76,11 @@ fn test_live_ipc() {
 
     // 7. Test safe IpcClient wrapper connection variants
     {
-        // Test connect_with_creds and k2 (2 parameters)
-        let client = IpcClient::connect_with_creds("127.0.0.1", 50005, "username:password")
-            .expect("IpcClient::connect_with_creds failed");
+        // Test builder with credentials and k2 (2 parameters)
+        let client = IpcClient::builder("127.0.0.1", 50005)
+            .creds("username:password")
+            .connect()
+            .expect("IpcClient builder with credentials failed");
         let res2 = client.k2("{x+y}", ki(10), ki(20));
         assert_eq!(res2.t(), -KI, "Result type of int addition should be int (-6)");
         assert_eq!(res2.i(), 30, "Result value of 10+20 should be 30");
@@ -86,18 +88,25 @@ fn test_live_ipc() {
     }
 
     {
-        // Test connect_with_timeout and k3 (3 parameters)
-        let client = IpcClient::connect_with_timeout("127.0.0.1", 50005, "username:password", 2000)
-            .expect("IpcClient::connect_with_timeout failed");
+        // Test builder with credentials + timeout and k3 (3 parameters)
+        let client = IpcClient::builder("127.0.0.1", 50005)
+            .creds("username:password")
+            .timeout(2000)
+            .connect()
+            .expect("IpcClient builder with credentials and timeout failed");
         let res3 = client.k3("{x+y+z}", ki(1), ki(2), ki(3));
         assert_eq!(res3.t(), -KI, "Result type of int addition should be int (-6)");
         assert_eq!(res3.i(), 6, "Result value of 1+2+3 should be 6");
     }
 
     {
-        // Test connect_with_capability and k1 (1 parameter)
-        let client = IpcClient::connect_with_capability("127.0.0.1", 50005, "username:password", 2000, 1)
-            .expect("IpcClient::connect_with_capability failed");
+        // Test builder with credentials + timeout + capability and k1 (1 parameter)
+        let client = IpcClient::builder("127.0.0.1", 50005)
+            .creds("username:password")
+            .timeout(2000)
+            .capability(1)
+            .connect()
+            .expect("IpcClient builder with credentials, timeout, and capability failed");
         let res4 = client.k1("{(x)}", ki(100));
         assert_eq!(res4.t(), -KI, "Result type of identity should be int (-6)");
         assert_eq!(res4.i(), 100, "Result value should be 100");

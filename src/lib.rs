@@ -542,6 +542,65 @@ pub fn sd0x(d: i32, f: i32) {
 
 /// A safe, RAII-based wrapper for KDB+ IPC client connections.
 /// Automatically closes the socket descriptor when dropped.
+/// Builder for configuring a KDB+ client connection.
+pub struct IpcBuilder<'a> {
+    hostname: &'a str,
+    port: i32,
+    creds: Option<&'a str>,
+    timeout_ms: Option<i32>,
+    capability: Option<i32>,
+}
+
+impl<'a> IpcBuilder<'a> {
+    /// Creates a new builder with the target hostname and port.
+    pub fn new(hostname: &'a str, port: i32) -> Self {
+        Self {
+            hostname,
+            port,
+            creds: None,
+            timeout_ms: None,
+            capability: None,
+        }
+    }
+
+    /// Sets the credentials (username:password) for the connection.
+    pub fn creds(mut self, creds: &'a str) -> Self {
+        self.creds = Some(creds);
+        self
+    }
+
+    /// Sets the connection timeout in milliseconds.
+    pub fn timeout(mut self, timeout_ms: i32) -> Self {
+        self.timeout_ms = Some(timeout_ms);
+        self
+    }
+
+    /// Sets the capability flag (e.g., capability settings like TLS).
+    pub fn capability(mut self, capability: i32) -> Self {
+        self.capability = Some(capability);
+        self
+    }
+
+    /// Establishes the connection and returns an `IpcClient`.
+    pub fn connect(self) -> Result<IpcClient, String> {
+        let h = match (self.creds, self.timeout_ms, self.capability) {
+            (Some(c), Some(t), Some(cap)) => khpunc(self.hostname, self.port, c, t, cap),
+            (Some(c), Some(t), None) => khpun(self.hostname, self.port, c, t),
+            (Some(c), None, None) => khpu(self.hostname, self.port, c),
+            (None, None, None) => khp(self.hostname, self.port),
+            (None, Some(t), None) => khpun(self.hostname, self.port, "", t),
+            (None, Some(t), Some(cap)) => khpunc(self.hostname, self.port, "", t, cap),
+            (Some(c), None, Some(cap)) => khpunc(self.hostname, self.port, c, 0, cap),
+            (None, None, Some(cap)) => khpunc(self.hostname, self.port, "", 0, cap),
+        };
+        if h <= 0 {
+            Err(format!("Connection failed, code: {}", h))
+        } else {
+            Ok(IpcClient { handle: h })
+        }
+    }
+}
+
 pub struct IpcClient {
     handle: i32,
 }
@@ -552,42 +611,12 @@ impl IpcClient {
 
     /// Connects to a remote KDB+ process.
     pub fn connect(hostname: &str, port: i32) -> Result<Self, String> {
-        let h = khp(hostname, port);
-        if h <= 0 {
-            Err(format!("Connection failed, code: {}", h))
-        } else {
-            Ok(Self { handle: h })
-        }
+        Self::builder(hostname, port).connect()
     }
 
-    /// Connects to a remote KDB+ process with a username and password.
-    pub fn connect_with_creds(hostname: &str, port: i32, username_password: &str) -> Result<Self, String> {
-        let h = khpu(hostname, port, username_password);
-        if h <= 0 {
-            Err(format!("Connection failed with credentials, code: {}", h))
-        } else {
-            Ok(Self { handle: h })
-        }
-    }
-
-    /// Connects to a remote KDB+ process with credentials and a connection timeout (in milliseconds).
-    pub fn connect_with_timeout(hostname: &str, port: i32, username_password: &str, timeout_ms: i32) -> Result<Self, String> {
-        let h = khpun(hostname, port, username_password, timeout_ms);
-        if h <= 0 {
-            Err(format!("Connection failed with timeout, code: {}", h))
-        } else {
-            Ok(Self { handle: h })
-        }
-    }
-
-    /// Connects to a remote KDB+ process with credentials, timeout, and a capability flag (e.g. TLS).
-    pub fn connect_with_capability(hostname: &str, port: i32, username_password: &str, timeout_ms: i32, capability: i32) -> Result<Self, String> {
-        let h = khpunc(hostname, port, username_password, timeout_ms, capability);
-        if h <= 0 {
-            Err(format!("Connection failed with capability settings, code: {}", h))
-        } else {
-            Ok(Self { handle: h })
-        }
+    /// Creates a builder for configuring a KDB+ client connection.
+    pub fn builder<'a>(hostname: &'a str, port: i32) -> IpcBuilder<'a> {
+        IpcBuilder::new(hostname, port)
     }
 
     /// Evaluates a query on the remote KDB+ process with 0 arguments.

@@ -144,7 +144,7 @@ The table below outlines how native `k.h` macros and functions map to `k4rust` c
 | | `jk(x, y)` / `jv(x, y)` | N/A | `jk(x, y)` / `jv(x, y)` | Supported (appends list/value in-place) |
 | **Event Loop** | `sd1(d, f)` | N/A | `sd1(d, f)` | Supported |
 | | `sd0(d)` / `sd0x(d, f)` | N/A | `sd0(d)` / `sd0x(d, f)` | Supported |
-| **IPC / Connection**| `khp` / `khpu` / `khpun` / `khpunc`| N/A | `khp` / `khpu` / `khpun` / `khpunc` | Supported |
+| **IPC / Connection**| `khp` / `khpu` / `khpun` / `khpunc`| `IpcClient::connect(h, p)` / `IpcClient::builder(h, p)` | `khp` / `khpu` / `khpun` / `khpunc` | Supported |
 | | `kclose` | N/A | `kclose` | Supported |
 | | `okx` | N/A | `okx` | Supported |
 | **Tables / Dicts** | `xD(x, y)` | N/A | `xD(x, y)` | Supported Dict constructor |
