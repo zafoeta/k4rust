@@ -25,7 +25,6 @@ unsafe extern "C" fn socket_callback(fd: i32) -> *mut ffi::k0 {
         let mut data = LAST_READ_DATA.lock().unwrap();
         data.extend_from_slice(&buf[..n as usize]);
     }
-    // Return NULL to unregister if connection closed/failed, otherwise return kb(0) to keep monitored
     if n <= 0 {
         std::ptr::null_mut()
     } else {
@@ -35,19 +34,20 @@ unsafe extern "C" fn socket_callback(fd: i32) -> *mut ffi::k0 {
 
 
 // --- Helper Functions ---
+// Helpers write to Vec (not K), so inline K reads are safe — no aliasing.
 
 #[inline(always)]
 fn to_f64_vec(k: &K) -> Vec<f64> {
     let n = k.n() as usize;
     let mut out = vec![0.0f64; n];
     match k.t() {
-        1 => { let s = k.kB(); for i in 0..n { out[i] = s[i] as f64; } }
-        4 => { let s = k.kG(); for i in 0..n { out[i] = s[i] as f64; } }
-        5 => { let s = k.kH(); for i in 0..n { out[i] = if s[i] == i16::MIN { f64::NAN } else { s[i] as f64 }; } }
-        6 => { let s = k.kI(); for i in 0..n { out[i] = if s[i] == i32::MIN { f64::NAN } else { s[i] as f64 }; } }
-        7 => { let s = k.kJ(); for i in 0..n { out[i] = if s[i] == i64::MIN { f64::NAN } else { s[i] as f64 }; } }
-        8 => { let s = k.kE(); for i in 0..n { out[i] = s[i] as f64; } }
-        9 => { let s = k.kF(); for i in 0..n { out[i] = s[i]; } }
+        1 => for i in 0..n { out[i] = k.kB()[i] as f64; },
+        4 => for i in 0..n { out[i] = k.kG()[i] as f64; },
+        5 => for i in 0..n { out[i] = if k.kH()[i] == i16::MIN { f64::NAN } else { k.kH()[i] as f64 }; },
+        6 => for i in 0..n { out[i] = if k.kI()[i] == i32::MIN { f64::NAN } else { k.kI()[i] as f64 }; },
+        7 => for i in 0..n { out[i] = if k.kJ()[i] == i64::MIN { f64::NAN } else { k.kJ()[i] as f64 }; },
+        8 => for i in 0..n { out[i] = k.kE()[i] as f64; },
+        9 => for i in 0..n { out[i] = k.kF()[i]; },
         _ => {}
     }
     out
@@ -58,13 +58,13 @@ fn to_f32_vec(k: &K) -> Vec<f32> {
     let n = k.n() as usize;
     let mut out = vec![0.0f32; n];
     match k.t() {
-        1 => { let s = k.kB(); for i in 0..n { out[i] = s[i] as f32; } }
-        4 => { let s = k.kG(); for i in 0..n { out[i] = s[i] as f32; } }
-        5 => { let s = k.kH(); for i in 0..n { out[i] = if s[i] == i16::MIN { f32::NAN } else { s[i] as f32 }; } }
-        6 => { let s = k.kI(); for i in 0..n { out[i] = if s[i] == i32::MIN { f32::NAN } else { s[i] as f32 }; } }
-        7 => { let s = k.kJ(); for i in 0..n { out[i] = if s[i] == i64::MIN { f32::NAN } else { s[i] as f32 }; } }
-        8 => { let s = k.kE(); for i in 0..n { out[i] = s[i]; } }
-        9 => { let s = k.kF(); for i in 0..n { out[i] = s[i] as f32; } }
+        1 => for i in 0..n { out[i] = k.kB()[i] as f32; },
+        4 => for i in 0..n { out[i] = k.kG()[i] as f32; },
+        5 => for i in 0..n { out[i] = if k.kH()[i] == i16::MIN { f32::NAN } else { k.kH()[i] as f32 }; },
+        6 => for i in 0..n { out[i] = if k.kI()[i] == i32::MIN { f32::NAN } else { k.kI()[i] as f32 }; },
+        7 => for i in 0..n { out[i] = if k.kJ()[i] == i64::MIN { f32::NAN } else { k.kJ()[i] as f32 }; },
+        8 => for i in 0..n { out[i] = k.kE()[i]; },
+        9 => for i in 0..n { out[i] = k.kF()[i] as f32; },
         _ => {}
     }
     out
@@ -75,11 +75,11 @@ fn to_i64_vec(k: &K) -> Vec<i64> {
     let n = k.n() as usize;
     let mut out = vec![0i64; n];
     match k.t() {
-        1 => { let s = k.kB(); for i in 0..n { out[i] = s[i] as i64; } }
-        4 => { let s = k.kG(); for i in 0..n { out[i] = s[i] as i64; } }
-        5 => { let s = k.kH(); for i in 0..n { out[i] = if s[i] == i16::MIN { i64::MIN } else { s[i] as i64 }; } }
-        6 => { let s = k.kI(); for i in 0..n { out[i] = if s[i] == i32::MIN { i64::MIN } else { s[i] as i64 }; } }
-        7 => { let s = k.kJ(); for i in 0..n { out[i] = s[i]; } }
+        1 => for i in 0..n { out[i] = k.kB()[i] as i64; },
+        4 => for i in 0..n { out[i] = k.kG()[i] as i64; },
+        5 => for i in 0..n { out[i] = if k.kH()[i] == i16::MIN { i64::MIN } else { k.kH()[i] as i64 }; },
+        6 => for i in 0..n { out[i] = if k.kI()[i] == i32::MIN { i64::MIN } else { k.kI()[i] as i64 }; },
+        7 => for i in 0..n { out[i] = k.kJ()[i]; },
         _ => {}
     }
     out
@@ -90,10 +90,10 @@ fn to_i32_vec(k: &K) -> Vec<i32> {
     let n = k.n() as usize;
     let mut out = vec![0i32; n];
     match k.t() {
-        1 => { let s = k.kB(); for i in 0..n { out[i] = s[i] as i32; } }
-        4 => { let s = k.kG(); for i in 0..n { out[i] = s[i] as i32; } }
-        5 => { let s = k.kH(); for i in 0..n { out[i] = if s[i] == i16::MIN { i32::MIN } else { s[i] as i32 }; } }
-        6 => { let s = k.kI(); for i in 0..n { out[i] = s[i]; } }
+        1 => for i in 0..n { out[i] = k.kB()[i] as i32; },
+        4 => for i in 0..n { out[i] = k.kG()[i] as i32; },
+        5 => for i in 0..n { out[i] = if k.kH()[i] == i16::MIN { i32::MIN } else { k.kH()[i] as i32 }; },
+        6 => for i in 0..n { out[i] = k.kI()[i]; },
         _ => {}
     }
     out
@@ -104,36 +104,39 @@ fn to_i16_vec(k: &K) -> Vec<i16> {
     let n = k.n() as usize;
     let mut out = vec![0i16; n];
     match k.t() {
-        1 => { let s = k.kB(); for i in 0..n { out[i] = s[i] as i16; } }
-        4 => { let s = k.kG(); for i in 0..n { out[i] = s[i] as i16; } }
-        5 => { let s = k.kH(); for i in 0..n { out[i] = s[i]; } }
+        1 => for i in 0..n { out[i] = k.kB()[i] as i16; },
+        4 => for i in 0..n { out[i] = k.kG()[i] as i16; },
+        5 => for i in 0..n { out[i] = k.kH()[i]; },
         _ => {}
     }
     out
 }
 
+// --- Mixed-type addition helpers ---
+// All write to K result buffers → hoist slices before loops.
+
 fn add_mixed_floats(x: &K, y: &K) -> K {
     let res = ktn(KF, x.n());
-    let res_floats = res.kF();
+    let rs = res.kF();
     if x.t() == 7 && y.t() == 9 {
         let (xv, yv) = (x.kJ(), y.kF());
-        for i in 0..res_floats.len() {
+        for i in 0..rs.len() {
             let xi = xv[i];
             let yi = yv[i];
-            res_floats[i] = if xi == i64::MIN || yi.is_nan() { f64::NAN } else { (xi as f64) + yi };
+            rs[i] = if xi == i64::MIN || yi.is_nan() { f64::NAN } else { (xi as f64) + yi };
         }
     } else if x.t() == 9 && y.t() == 7 {
         let (xv, yv) = (x.kF(), y.kJ());
-        for i in 0..res_floats.len() {
+        for i in 0..rs.len() {
             let xi = xv[i];
             let yi = yv[i];
-            res_floats[i] = if xi.is_nan() || yi == i64::MIN { f64::NAN } else { xi + (yi as f64) };
+            rs[i] = if xi.is_nan() || yi == i64::MIN { f64::NAN } else { xi + (yi as f64) };
         }
     } else {
         let xv = to_f64_vec(x);
         let yv = to_f64_vec(y);
-        for i in 0..res_floats.len() {
-            res_floats[i] = xv[i] + yv[i];
+        for i in 0..rs.len() {
+            rs[i] = xv[i] + yv[i];
         }
     }
     res
@@ -143,37 +146,37 @@ fn add_mixed_reals(x: &K, y: &K) -> K {
     let xv = to_f32_vec(x);
     let yv = to_f32_vec(y);
     let res = ktn(KE, x.n());
-    let res_reals = res.kE();
-    for i in 0..res_reals.len() {
-        res_reals[i] = xv[i] + yv[i];
+    let rs = res.kE();
+    for i in 0..rs.len() {
+        rs[i] = xv[i] + yv[i];
     }
     res
 }
 
 fn add_mixed_longs(x: &K, y: &K) -> K {
     let res = ktn(KJ, x.n());
-    let res_longs = res.kJ();
+    let rs = res.kJ();
     if x.t() == 6 && y.t() == 7 {
         let (xv, yv) = (x.kI(), y.kJ());
-        for i in 0..res_longs.len() {
+        for i in 0..rs.len() {
             let xi = xv[i];
             let yi = yv[i];
-            res_longs[i] = if xi == i32::MIN || yi == i64::MIN { i64::MIN } else { (xi as i64).wrapping_add(yi) };
+            rs[i] = if xi == i32::MIN || yi == i64::MIN { i64::MIN } else { (xi as i64).wrapping_add(yi) };
         }
     } else if x.t() == 7 && y.t() == 6 {
         let (xv, yv) = (x.kJ(), y.kI());
-        for i in 0..res_longs.len() {
+        for i in 0..rs.len() {
             let xi = xv[i];
             let yi = yv[i];
-            res_longs[i] = if xi == i64::MIN || yi == i32::MIN { i64::MIN } else { xi.wrapping_add(yi as i64) };
+            rs[i] = if xi == i64::MIN || yi == i32::MIN { i64::MIN } else { xi.wrapping_add(yi as i64) };
         }
     } else {
         let xv = to_i64_vec(x);
         let yv = to_i64_vec(y);
-        for i in 0..res_longs.len() {
+        for i in 0..rs.len() {
             let xi = xv[i];
             let yi = yv[i];
-            res_longs[i] = if xi == i64::MIN || yi == i64::MIN { i64::MIN } else { xi.wrapping_add(yi) };
+            rs[i] = if xi == i64::MIN || yi == i64::MIN { i64::MIN } else { xi.wrapping_add(yi) };
         }
     }
     res
@@ -183,39 +186,39 @@ fn add_mixed_ints(x: &K, y: &K) -> K {
     let xv = to_i32_vec(x);
     let yv = to_i32_vec(y);
     let res = ktn(KI, x.n());
-    let res_ints = res.kI();
-    for i in 0..res_ints.len() {
+    let rs = res.kI();
+    for i in 0..rs.len() {
         let xi = xv[i];
         let yi = yv[i];
-        res_ints[i] = if xi == i32::MIN || yi == i32::MIN { i32::MIN } else { xi.wrapping_add(yi) };
+        rs[i] = if xi == i32::MIN || yi == i32::MIN { i32::MIN } else { xi.wrapping_add(yi) };
     }
     res
 }
 
 fn add_mixed_shorts(x: &K, y: &K) -> K {
     let res = ktn(KH, x.n());
-    let res_shorts = res.kH();
+    let rs = res.kH();
     if x.t() == 5 && y.t() == 4 {
         let (xv, yv) = (x.kH(), y.kG());
-        for i in 0..res_shorts.len() {
+        for i in 0..rs.len() {
             let xi = xv[i];
             let yi = yv[i];
-            res_shorts[i] = if xi == i16::MIN { i16::MIN } else { xi.wrapping_add(yi as i16) };
+            rs[i] = if xi == i16::MIN { i16::MIN } else { xi.wrapping_add(yi as i16) };
         }
     } else if x.t() == 4 && y.t() == 5 {
         let (xv, yv) = (x.kG(), y.kH());
-        for i in 0..res_shorts.len() {
+        for i in 0..rs.len() {
             let xi = xv[i];
             let yi = yv[i];
-            res_shorts[i] = if yi == i16::MIN { i16::MIN } else { (xi as i16).wrapping_add(yi) };
+            rs[i] = if yi == i16::MIN { i16::MIN } else { (xi as i16).wrapping_add(yi) };
         }
     } else {
         let xv = to_i16_vec(x);
         let yv = to_i16_vec(y);
-        for i in 0..res_shorts.len() {
+        for i in 0..rs.len() {
             let xi = xv[i];
             let yi = yv[i];
-            res_shorts[i] = if xi == i16::MIN || yi == i16::MIN { i16::MIN } else { xi.wrapping_add(yi) };
+            rs[i] = if xi == i16::MIN || yi == i16::MIN { i16::MIN } else { xi.wrapping_add(yi) };
         }
     }
     res
@@ -223,20 +226,18 @@ fn add_mixed_shorts(x: &K, y: &K) -> K {
 
 fn add_mixed_bytes(x: &K, y: &K) -> K {
     let res = ktn(KG, x.n());
-    let res_bytes = res.kG();
-    let (xb, yb) = (x.kB(), y.kB());
-    for i in 0..res_bytes.len() {
-        res_bytes[i] = (xb[i].wrapping_add(yb[i])) as u8;
+    let (xb, yb, rs) = (x.kB(), y.kB(), res.kG());
+    for i in 0..rs.len() {
+        rs[i] = (xb[i].wrapping_add(yb[i])) as u8;
     }
     res
 }
 
 fn add_mixed_bools(x: &K, y: &K) -> K {
     let res = ktn(KB, x.n());
-    let res_bools = res.kB();
-    let (xb, yb) = (x.kB(), y.kB());
-    for i in 0..res_bools.len() {
-        res_bools[i] = if (xb[i] != 0) ^ (yb[i] != 0) { 1 } else { 0 };
+    let (xb, yb, rs) = (x.kB(), y.kB(), res.kB());
+    for i in 0..rs.len() {
+        rs[i] = if (xb[i] != 0) ^ (yb[i] != 0) { 1 } else { 0 };
     }
     res
 }
@@ -250,16 +251,13 @@ k4rust_api! {
         if x.n() != y.n() { return krr("length"); }
 
         let res = ktn(KJ, x.n());
-
-        let (x_longs, y_longs, res_longs) = (x.kJ(), y.kJ(), res.kJ());
-
+        let (xs, ys, rs) = (x.kJ(), y.kJ(), res.kJ());
         const NJ: i64 = i64::MIN;
-        for i in 0..res_longs.len() {
-            let xi = x_longs[i];
-            let yi = y_longs[i];
-            res_longs[i] = if xi == NJ || yi == NJ { NJ } else { xi.wrapping_add(yi) };
+        for i in 0..rs.len() {
+            let xi = xs[i];
+            let yi = ys[i];
+            rs[i] = if xi == NJ || yi == NJ { NJ } else { xi.wrapping_add(yi) };
         }
-
         res
     }
 
@@ -269,94 +267,79 @@ k4rust_api! {
 
         let factor = xf(y);
         let res = ktn(KF, x.n());
-        let (x_floats, res_floats) = (x.kF(), res.kF());
-
-        for i in 0..res_floats.len() {
-            res_floats[i] = x_floats[i] * factor;
+        let (xs, rs) = (x.kF(), res.kF());
+        for i in 0..rs.len() {
+            rs[i] = xs[i] * factor;
         }
-
         res
     }
 
     // 3. Filter int vector > y (KI / Type 6)
+    // Read-only count loop uses inline; write loop hoists slices.
     pub fn filter_greater(x: K, y: K) -> K {
         if x.t() != KI || y.t() != -KI { return krr("type"); }
 
-        let x_ints = x.kI();
+        let xs = x.kI();
         let limit = xi(y);
 
         let mut count = 0i64;
-        for i in 0..x_ints.len() {
-            if x_ints[i] > limit {
-                count += 1;
-            }
+        for i in 0..xs.len() {
+            if xs[i] > limit { count += 1; }
         }
 
         let res = ktn(KI, count);
-        let res_ints = res.kI();
+        let rs = res.kI();
         let mut idx = 0usize;
-        for i in 0..x_ints.len() {
-            let val = x_ints[i];
-            if val > limit {
-                res_ints[idx] = val;
+        for i in 0..xs.len() {
+            if xs[i] > limit {
+                rs[idx] = xs[i];
                 idx += 1;
             }
         }
-
         res
     }
 
     // 4. Count character occurrences in string (KC / Type 10)
+    // Read-only — inline is fine.
     pub fn count_char(s: K, c: K) -> K {
         if s.t() != KC || c.t() != -KC { return krr("type"); }
 
-        let s_chars = s.kC();
-        let char_to_find = xg(c);
-
+        let ch = xg(c);
         let mut count = 0i32;
-        for i in 0..s_chars.len() {
-            if s_chars[i] == char_to_find {
-                count += 1;
-            }
+        for i in 0..s.n() as usize {
+            if s.kC()[i] == ch { count += 1; }
         }
-
         ki(count)
     }
 
     // 5. Retrieve a vector from a mixed list and sum it (Mixed / Type 0)
+    // Read-only — inline is fine.
     pub fn sum_mixed(x: K, y: K) -> K {
         if x.t() != 0 || y.t() != -KI { return krr("type"); }
 
-        let index = xi(y) as usize;
-        if index >= x.n() as usize { return krr("index"); }
+        let idx = xi(y) as usize;
+        if idx >= x.n() as usize { return krr("index"); }
 
-        let x_mixed = kK(x);
-        let sub_vector = &x_mixed[index];
+        let sub = &kK(x)[idx];
+        if sub.t() != KJ { return krr("type"); }
 
-        if sub_vector.t() != KJ { return krr("type"); }
-
-        let sub_slice = sub_vector.kJ();
         let mut total = 0i64;
-        let sub_len = sub_slice.len();
-        for i in 0..sub_len {
-            total = total.wrapping_add(sub_slice[i]);
+        for i in 0..sub.n() as usize {
+            total = total.wrapping_add(sub.kJ()[i]);
         }
-
         kj(total)
     }
 
     // 6. Vector dot product (KF * KF -> KF)
+    // Read-only — inline is fine.
     pub fn dot_product(x: K, y: K) -> K {
         if x.t() != KF || y.t() != x.t() { return krr("type"); }
         if x.n() != y.n() { return krr("length"); }
 
-        let (x_floats, y_floats) = (x.kF(), y.kF());
-
         let mut total = 0.0;
-        for i in 0..x_floats.len() {
-            total += x_floats[i] * y_floats[i];
+        for i in 0..x.n() as usize {
+            total += x.kF()[i] * y.kF()[i];
         }
-
         kf(total)
     }
 
@@ -365,63 +348,55 @@ k4rust_api! {
         if x.t() != KJ || mask.t() != KB { return krr("type"); }
         if x.n() != mask.n() { return krr("length"); }
 
-        let (x_longs, mask_bytes) = (x.kJ(), mask.kB());
+        let (xs, ms) = (x.kJ(), mask.kB());
 
         let mut count = 0i64;
-        for i in 0..x_longs.len() {
-            if mask_bytes[i] != 0 {
-                count += 1;
-            }
+        for i in 0..xs.len() {
+            if ms[i] != 0 { count += 1; }
         }
 
         let res = ktn(KJ, count);
-        let res_longs = res.kJ();
+        let rs = res.kJ();
         let mut idx = 0usize;
-        for i in 0..x_longs.len() {
-            if mask_bytes[i] != 0 {
-                res_longs[idx] = x_longs[i];
+        for i in 0..xs.len() {
+            if ms[i] != 0 {
+                rs[idx] = xs[i];
                 idx += 1;
             }
         }
-
         res
     }
 
     // 8. Count occurrences of target symbol (KS where KS -> KI)
+    // Read-only — inline is fine.
     pub fn count_symbol(x: K, target: K) -> K {
         if x.t() != KS || target.t() != -KS { return krr("type"); }
 
-        let x_syms = x.kS();
-        let target_sym = xs(target);
-
+        let t = xs(target);
         let mut count = 0i32;
-        for i in 0..x_syms.len() {
-            if x_syms[i] == target_sym {
-                count += 1;
-            }
+        for i in 0..x.n() as usize {
+            if x.kS()[i] == t { count += 1; }
         }
-
         ki(count)
     }
 
     // 9. Add mixed numeric vectors with upcasting promotion
     pub fn add_mixed(x: K, y: K) -> K {
-        let xtype = x.t();
-        let ytype = y.t();
-        let xlen = x.n();
-        if xlen != y.n() { return krr("length"); }
+        let xt = x.t();
+        let yt = y.t();
+        if x.n() != y.n() { return krr("length"); }
 
-        let common_type = match (xtype, ytype) {
+        let ct = match (xt, yt) {
             (1..=9, 1..=9) => {
-                if xtype == 2 || xtype == 3 || ytype == 2 || ytype == 3 {
+                if xt == 2 || xt == 3 || yt == 2 || yt == 3 {
                     return krr("type");
                 }
-                std::cmp::max(xtype, ytype)
+                std::cmp::max(xt, yt)
             }
             _ => return krr("type"),
         };
 
-        match common_type {
+        match ct {
             9 => add_mixed_floats(x, y),
             8 => add_mixed_reals(x, y),
             7 => add_mixed_longs(x, y),
@@ -436,38 +411,35 @@ k4rust_api! {
     // 10. Generate a long vector of size n containing 0..n
     pub fn generate_vector(n: K) -> K {
         let t = n.t();
-        let size = if t == -6 {
+        let sz = if t == -6 {
             xi(n) as i64
         } else if t == -7 {
             xj(n)
         } else {
             return krr("type");
         };
+        if sz < 0 { return krr("length"); }
 
-        if size < 0 { return krr("length"); }
-
-        let res = ktn(KJ, size);
-        let res_longs = res.kJ();
-        for i in 0..res_longs.len() {
-            res_longs[i] = i as i64;
+        let res = ktn(KJ, sz);
+        let rs = res.kJ();
+        for i in 0..rs.len() {
+            rs[i] = i as i64;
         }
-
         res
     }
 
     // 11. Package results in a mixed list
+    // No loop — inline is fine.
     pub fn package_results(x: K, y: K) -> K {
         let res = ktn(0, 2);
-        let res_k = res.kK();
-        res_k[0] = x.clone();
-        res_k[1] = y.clone();
+        res.kK()[0] = x.clone();
+        res.kK()[1] = y.clone();
         res
     }
 
     // 12. Test early exit error leak prevention
     pub fn test_leak_krr(x: K) -> K {
-        let size = xj(x);
-        let _res = ktn(KJ, size);
+        let _res = ktn(KJ, xj(x));
         krr("test_krr_error")
     }
 
@@ -478,56 +450,47 @@ k4rust_api! {
 
     // 14. Verify new API signatures and constructors compile
     pub fn test_new_apis(x: K) -> K {
-        // GUID
         let guid = ku([0; 16]);
         let _guids = kU(&guid);
         let _guid_free = kU(&guid);
 
-        // Shorthand list indexing
-        let mixed_list = ktn(0, 2);
-        let _first = xx(&mixed_list);
-        let _second = xy(&mixed_list);
+        let ml = ktn(0, 2);
+        let _first = xx(&ml);
+        let _second = xy(&ml);
 
-        // Temporal constructors
         let _date = kd(20000101);
         let _datetime = kz(1.5);
         let _time = kt(120000);
         let _timestamp = ktj(KP, 1234567890);
 
-        // Symbol constructor & interning
-        let symbol_name = ss("test_symbol");
-        let _sym = ks(symbol_name);
+        let sym = ss("test_symbol");
+        let _s = ks(sym);
 
-        // Dict / Table constructors
         let keys = ktn(KS, 1);
         let vals = ktn(KI, 1);
         let dict = xD(keys, vals);
         let _tbl = xT(dict.clone());
         let _simple_tbl = ktd(dict);
 
-        // Serialization
-        let _serialized = b9(1, &x);
-        let _deserialized = d9(&x);
+        let _ser = b9(1, &x);
+        let _de = d9(&x);
 
-        // Temporal helpers
-        let _encoded = ymd(2020, 1, 1);
-        let _decoded = dj(_encoded);
+        let _enc = ymd(2020, 1, 1);
+        let _dec = dj(_enc);
 
-        // List Appenders
-        let mut list_i = ktn(KI, 0);
-        ja(&mut list_i, &123 as *const i32 as *mut _);
-        let mut list_s = ktn(KS, 0);
-        js(&mut list_s, symbol_name);
-        let mut list_mixed = ktn(0, 0);
-        jk(&mut list_mixed, ki(456));
-        let mut list_i2 = ktn(KI, 0);
-        jv(&mut list_i2, ktn(KI, 2));
+        let mut li = ktn(KI, 0);
+        ja(&mut li, &123 as *const i32 as *mut _);
+        let mut ls = ktn(KS, 0);
+        js(&mut ls, sym);
+        let mut lm = ktn(0, 0);
+        jk(&mut lm, ki(456));
+        let mut li2 = ktn(KI, 0);
+        jv(&mut li2, ktn(KI, 2));
 
-        // Evaluation
-        let _eval0 = k0(0, "1+1");
-        let _eval1 = k1(0, "{(x)}", ki(5));
-        let _eval2 = k2(0, "{x+y}", ki(1), ki(2));
-        let _eval3 = k3(0, "{x+y+z}", ki(1), ki(2), ki(3));
+        let _e0 = k0(0, "1+1");
+        let _e1 = k1(0, "{(x)}", ki(5));
+        let _e2 = k2(0, "{x+y}", ki(1), ki(2));
+        let _e3 = k3(0, "{x+y+z}", ki(1), ki(2), ki(3));
 
         x.clone()
     }
@@ -544,87 +507,74 @@ k4rust_api! {
 
     // FFI entry point: Test sd1 setup and descriptor registration
     pub fn test_sd_setup(_x: K) -> K {
-        let (sock1, sock2) = UnixStream::pair().unwrap();
-        sock1.set_nonblocking(true).unwrap();
-        sock2.set_nonblocking(true).unwrap();
-        let fd1 = sock1.as_raw_fd();
-        let fd2 = sock2.as_raw_fd();
+        let (s1, s2) = UnixStream::pair().unwrap();
+        s1.set_nonblocking(true).unwrap();
+        s2.set_nonblocking(true).unwrap();
+        let fd1 = s1.as_raw_fd();
+        let fd2 = s2.as_raw_fd();
 
         println!("Rust: fd1={}, fd2={}", fd1, fd2);
 
-        // Store them globally so they are not dropped
-        *SOCKET_1.lock().unwrap() = Some(sock1);
-        *SOCKET_2.lock().unwrap() = Some(sock2);
-
-        // Reset the counters
+        *SOCKET_1.lock().unwrap() = Some(s1);
+        *SOCKET_2.lock().unwrap() = Some(s2);
         *CALLED_COUNT.lock().unwrap() = 0;
         LAST_READ_DATA.lock().unwrap().clear();
 
-        // Register with sd1
-        let res_sd = sd1(fd1, Some(socket_callback));
-        println!("Rust: sd1 returned = {:?}", res_sd.as_raw());
+        let _r = sd1(fd1, Some(socket_callback));
+        println!("Rust: sd1 returned = {:?}", _r.as_raw());
 
-        // Return (fd1; fd2)
+        // No loop — inline is fine.
         let res = ktn(KI, 2);
-        let res_ints = res.kI();
-        res_ints[0] = fd1;
-        res_ints[1] = fd2;
+        res.kI()[0] = fd1;
+        res.kI()[1] = fd2;
         res
     }
 
     // FFI entry point: Test sd write
     pub fn test_sd_write(fd: K, data: K) -> K {
-        let fd_val = xi(fd);
+        let fv = xi(fd);
         if data.t() != KC { return krr("type"); }
-        let bytes = kC(data);
-        let written = unsafe { write(fd_val, bytes.as_ptr() as *const _, bytes.len()) };
-        kb(if written > 0 { 1 } else { 0 })
+        let b = kC(data);
+        let w = unsafe { write(fv, b.as_ptr() as *const _, b.len()) };
+        kb(if w > 0 { 1 } else { 0 })
     }
 
     // FFI entry point: Test sd status retrieval
     pub fn test_sd_status(_x: K) -> K {
         let count = *CALLED_COUNT.lock().unwrap();
         let data = LAST_READ_DATA.lock().unwrap().clone();
-        
+
+        // No loop — inline is fine.
         let res = ktn(0, 2);
-        let res_k = res.kK();
-        res_k[0] = ki(count);
-        
-        // Convert Vec<u8> to a KC string object
-        let str_len = data.len();
-        let s_k = ktn(KC, str_len as i64);
-        let s_bytes = s_k.kC();
-        s_bytes[..str_len].copy_from_slice(&data);
-        res_k[1] = s_k;
+        res.kK()[0] = ki(count);
+
+        let sk = ktn(KC, data.len() as i64);
+        let sb = sk.kC();
+        sb[..data.len()].copy_from_slice(&data);
+        res.kK()[1] = sk;
         res
     }
 
     // FFI entry point: Test sd0 and sd0x unregistration and close
     pub fn test_sd_close(fd: K, mode: K) -> K {
-        let fd_val = xi(fd);
-        let mode_val = xi(mode);
-        if mode_val == 1 {
-            sd0x(fd_val, 1);
-            // Clear the global socket storage if closed by sd0x
-            if fd_val == SOCKET_1.lock().unwrap().as_ref().map(|s| s.as_raw_fd()).unwrap_or(-1) {
-                let mut s = SOCKET_1.lock().unwrap();
-                let _ = s.take();
-            } else if fd_val == SOCKET_2.lock().unwrap().as_ref().map(|s| s.as_raw_fd()).unwrap_or(-1) {
-                let mut s = SOCKET_2.lock().unwrap();
-                let _ = s.take();
+        let fv = xi(fd);
+        let mv = xi(mode);
+        if mv == 1 {
+            sd0x(fv, 1);
+            if fv == SOCKET_1.lock().unwrap().as_ref().map(|s| s.as_raw_fd()).unwrap_or(-1) {
+                let _ = SOCKET_1.lock().unwrap().take();
+            } else if fv == SOCKET_2.lock().unwrap().as_ref().map(|s| s.as_raw_fd()).unwrap_or(-1) {
+                let _ = SOCKET_2.lock().unwrap().take();
             }
         } else {
-            sd0(fd_val);
-            unsafe { close(fd_val); }
-            if fd_val == SOCKET_1.lock().unwrap().as_ref().map(|s| s.as_raw_fd()).unwrap_or(-1) {
-                let mut s = SOCKET_1.lock().unwrap();
-                let _ = s.take();
-            } else if fd_val == SOCKET_2.lock().unwrap().as_ref().map(|s| s.as_raw_fd()).unwrap_or(-1) {
-                let mut s = SOCKET_2.lock().unwrap();
-                let _ = s.take();
+            sd0(fv);
+            unsafe { close(fv); }
+            if fv == SOCKET_1.lock().unwrap().as_ref().map(|s| s.as_raw_fd()).unwrap_or(-1) {
+                let _ = SOCKET_1.lock().unwrap().take();
+            } else if fv == SOCKET_2.lock().unwrap().as_ref().map(|s| s.as_raw_fd()).unwrap_or(-1) {
+                let _ = SOCKET_2.lock().unwrap().take();
             }
         }
         kb(1)
     }
 }
-

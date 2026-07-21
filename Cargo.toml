@@ -26,3 +26,9 @@ path = "tests/ffi/k4rust_test_ffi.rs"
 name = "k4rust_ipc"
 path = "examples/k4rust_ipc.rs"
 
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "slice_access"
+harness = false
