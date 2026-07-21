@@ -9,7 +9,7 @@ fn main() {
     // Perform symlinking for the examples output directory
     let examples_dir = target_dir.join("examples");
     let _ = std::fs::create_dir_all(&examples_dir);
-    let so_path = examples_dir.join("libk4rust_usage.so");
+    let so_path = examples_dir.join("libk4rust_shlib.so");
     if so_path.exists() || so_path.symlink_metadata().is_ok() {
         let _ = std::fs::remove_file(&so_path);
     }
@@ -21,7 +21,7 @@ fn main() {
     
     #[cfg(unix)]
     {
-        let _ = std::os::unix::fs::symlink("libk4rust_usage.dylib", &so_path);
+        let _ = std::os::unix::fs::symlink("libk4rust_shlib.dylib", &so_path);
         let _ = std::os::unix::fs::symlink("libk4rust_test_ffi.dylib", &test_so_path);
     }
 

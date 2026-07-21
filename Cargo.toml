@@ -12,9 +12,9 @@ crate-type = ["lib"]
 members = ["."]
 
 [[example]]
-name = "k4rust_usage"
+name = "k4rust_shlib"
 crate-type = ["cdylib"]
-path = "examples/k4rust_usage.rs"
+path = "examples/k4rust_shlib.rs"
 
 [[example]]
 name = "k4rust_test_ffi"
