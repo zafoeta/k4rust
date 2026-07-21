@@ -552,41 +552,41 @@ impl IpcClient {
 
     /// Connects to a remote KDB+ process.
     pub fn connect(hostname: &str, port: i32) -> Result<Self, String> {
-        let handle = khp(hostname, port);
-        if handle <= 0 {
-            Err(format!("Connection failed, code: {}", handle))
+        let h = khp(hostname, port);
+        if h <= 0 {
+            Err(format!("Connection failed, code: {}", h))
         } else {
-            Ok(Self { handle })
+            Ok(Self { handle: h })
         }
     }
 
     /// Connects to a remote KDB+ process with a username and password.
     pub fn connect_with_creds(hostname: &str, port: i32, username_password: &str) -> Result<Self, String> {
-        let handle = khpu(hostname, port, username_password);
-        if handle <= 0 {
-            Err(format!("Connection failed with credentials, code: {}", handle))
+        let h = khpu(hostname, port, username_password);
+        if h <= 0 {
+            Err(format!("Connection failed with credentials, code: {}", h))
         } else {
-            Ok(Self { handle })
+            Ok(Self { handle: h })
         }
     }
 
     /// Connects to a remote KDB+ process with credentials and a connection timeout (in milliseconds).
     pub fn connect_with_timeout(hostname: &str, port: i32, username_password: &str, timeout_ms: i32) -> Result<Self, String> {
-        let handle = khpun(hostname, port, username_password, timeout_ms);
-        if handle <= 0 {
-            Err(format!("Connection failed with timeout, code: {}", handle))
+        let h = khpun(hostname, port, username_password, timeout_ms);
+        if h <= 0 {
+            Err(format!("Connection failed with timeout, code: {}", h))
         } else {
-            Ok(Self { handle })
+            Ok(Self { handle: h })
         }
     }
 
     /// Connects to a remote KDB+ process with credentials, timeout, and a capability flag (e.g. TLS).
     pub fn connect_with_capability(hostname: &str, port: i32, username_password: &str, timeout_ms: i32, capability: i32) -> Result<Self, String> {
-        let handle = khpunc(hostname, port, username_password, timeout_ms, capability);
-        if handle <= 0 {
-            Err(format!("Connection failed with capability settings, code: {}", handle))
+        let h = khpunc(hostname, port, username_password, timeout_ms, capability);
+        if h <= 0 {
+            Err(format!("Connection failed with capability settings, code: {}", h))
         } else {
-            Ok(Self { handle })
+            Ok(Self { handle: h })
         }
     }
 
@@ -612,7 +612,7 @@ impl IpcClient {
 
     /// Evaluates a query with a dynamic number of arguments by packaging them
     /// into a mixed list under the hood and applying them via the KDB+ dot (`.`) operator.
-    pub fn k_eval_dynamic(&self, query: &str, args: Vec<K>) -> K {
+    pub fn query(&self, query: &str, args: Vec<K>) -> K {
         // Fast-path: use direct k0-k3 calls for small arities to avoid
         // the overhead of mixed-list packaging and the dot operator.
         match args.len() {
@@ -638,14 +638,14 @@ impl IpcClient {
         }
 
         let n = args.len();
-        let args_list = ktn(0, n as i64);
-        let slice = args_list.kK();
+        let al = ktn(0, n as i64);
+        let s = al.kK();
         for (i, arg) in args.into_iter().enumerate() {
-            slice[i] = arg;
+            s[i] = arg;
         }
         
-        let query_k = kp(query);
-        k2(self.handle, "{(value x) . y}", query_k, args_list)
+        let qk = kp(query);
+        k2(self.handle, "{(value x) . y}", qk, al)
     }
 
     /// Verifies the handshake response.

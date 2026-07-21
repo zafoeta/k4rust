@@ -88,7 +88,7 @@ fn query_kdb() -> Result<(), String> {
 
     // Evaluate queries with dynamic arity (e.g. 4 parameters known only at runtime)
     let args = vec![ki(10), ki(20), ki(30), ki(40)];
-    let result_dyn: K = client.k_eval_dynamic("{[a;b;c;d] a+b+c+d}", args);
+    let result_dyn: K = client.query("{[a;b;c;d] a+b+c+d}", args);
     println!("Dynamic Result: {}", result_dyn.i());
 
     Ok(())
@@ -97,9 +97,9 @@ fn query_kdb() -> Result<(), String> {
 
 ### Dynamic Evaluation
 
-Because Rust does not natively support safe C-style variadic arguments, `k4rust` provides explicit functions/methods for evaluations with up to 3 arguments (`k0` through `k3`). For queries that require 4 or more arguments, or where the number of arguments is determined dynamically at runtime, `IpcClient` provides `k_eval_dynamic(query, args)`. 
+Because Rust does not natively support safe C-style variadic arguments, `k4rust` provides explicit functions/methods for evaluations with up to 3 arguments (`k0` through `k3`). For queries that require 4 or more arguments, or where the number of arguments is determined dynamically at runtime, `IpcClient` provides `query(query, args)`. 
 
-Under the hood, `k_eval_dynamic` packages the arguments into a mixed list (type `0`) and applies them to the query on the remote `q` process using the KDB+ dot (`.`) application operator.
+Under the hood, `query` packages the arguments into a mixed list (type `0`) and applies them to the query on the remote `q` process using the KDB+ dot (`.`) application operator.
 
 ---
 
@@ -150,7 +150,7 @@ The table below outlines how native `k.h` macros and functions map to `k4rust` c
 | **Tables / Dicts** | `xD(x, y)` | N/A | `xD(x, y)` | Supported Dict constructor |
 | | `xT(x)` | N/A | `xT(x)` | Supported Table constructor |
 | | `ktd(x)` | N/A | `ktd(x)` | Supported Table-to-Dict converter |
-| **Evaluations** | `k(h, q, ...)` | `client.k0(q)` to `client.k3(q, x, y, z)` / `client.k_eval_dynamic(q, args)` | `k0(h, q)` to `k3(h, q, x, y, z)` | Supported (arity 0-3 / dynamic arity via list packaging) |
+| **Evaluations** | `k(h, q, ...)` | `client.k0(q)` to `client.k3(q, x, y, z)` / `client.query(q, args)` | `k0(h, q)` to `k3(h, q, x, y, z)` | Supported (arity 0-3 / dynamic arity via list packaging) |
 
 ---
 

@@ -104,22 +104,22 @@ fn test_live_ipc() {
     }
 
     {
-        // Test k_eval_dynamic (dynamic arity query with 4 parameters)
-        let client = IpcClient::connect("127.0.0.1", 50005)
+        // Test query (dynamic arity query with 4 parameters)
+        let c = IpcClient::connect("127.0.0.1", 50005)
             .expect("IpcClient::connect failed");
-        let args = vec![ki(10), ki(20), ki(30), ki(40)];
-        let res5 = client.k_eval_dynamic("{[a;b;c;d] a+b+c+d}", args);
-        assert_eq!(res5.t(), -KI, "Result type of dynamic arity query should be int (-6)");
-        assert_eq!(res5.i(), 100, "Result value should be 100");
+        let a = vec![ki(10), ki(20), ki(30), ki(40)];
+        let r = c.query("{[a;b;c;d] a+b+c+d}", a);
+        assert_eq!(r.t(), -KI, "Result type of dynamic arity query should be int (-6)");
+        assert_eq!(r.i(), 100, "Result value should be 100");
 
         // Test K.r() method (reference count tracking)
-        assert_eq!(res5.r(), 0, "Initial reference count should be 0");
+        assert_eq!(r.r(), 0, "Initial reference count should be 0");
         {
-            let cloned = res5.clone();
-            assert_eq!(res5.r(), 1, "Reference count after clone should be 1");
+            let cloned = r.clone();
+            assert_eq!(r.r(), 1, "Reference count after clone should be 1");
             assert_eq!(cloned.r(), 1, "Reference count of clone should be 1");
         } // cloned dropped here (decrementing reference count)
-        assert_eq!(res5.r(), 0, "Reference count after dropping the clone should be 0");
+        assert_eq!(r.r(), 0, "Reference count after dropping the clone should be 0");
     }
 
     // 8. Terminate q process
