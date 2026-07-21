@@ -1,0 +1,18 @@
+error[E0308]: mismatched types
+ --> tests/ui/return_borrow_fail.rs:3:1
+  |
+3 | / k4rust_api! {
+4 | |     pub fn return_borrow_fail(_x: K, y: K) -> K {
+5 | |         y // should fail because y is a borrowed reference (&K) but signature returns K
+6 | |     }
+7 | | }
+  | | ^
+  | | |
+  | |_expected `K`, found `&K`
+  |   expected due to this
+  |
+  = note: this error originates in the macro `k4rust_api` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider using clone here
+  |
+7 | }.clone()
+  |  ++++++++
