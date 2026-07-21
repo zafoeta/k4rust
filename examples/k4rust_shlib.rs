@@ -4,7 +4,7 @@ use k4rust::*;
 k4rust_api! {
     /// Adds two long vector lists together, demonstrating type checking,
     /// length validation, allocation, and slice manipulation.
-    pub fn add_vectors_example(x: K, y: K) -> K {
+    pub fn add_vectors(x: K, y: K) -> K {
         // 1. Type validation
         if x.t() != KJ || y.t() != KJ { return krr("type"); }
         
@@ -36,7 +36,7 @@ k4rust_api! {
     }
 
     /// Multiplies a float vector list by a scalar float factor.
-    pub fn scale_floats_example(x: K, y: K) -> K {
+    pub fn scale_floats(x: K, y: K) -> K {
         if x.t() != KF || y.t() != -KF { return krr("type"); }
 
         let factor = xf(y);
