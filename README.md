@@ -195,9 +195,9 @@ When creating a mixed list (type 0) containing input arguments, the developer mu
 k4rust_api! {
     pub fn package_results(x: K, y: K) -> K {
         let res = ktn(0, 2);
-        let res_k = res.kK();
-        res_k[0] = r1(x); // Use safe r1 wrapper (or x.clone())
-        res_k[1] = r1(y); // Use safe r1 wrapper (or y.clone())
+        let l = res.kK();
+        l[0] = r1(x); // Use safe r1 wrapper (or x.clone())
+        l[1] = r1(y); // Use safe r1 wrapper (or y.clone())
         res
     }
 }
