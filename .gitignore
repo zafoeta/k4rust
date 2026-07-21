@@ -6,4 +6,5 @@
 *.dylib
 *.dll
 *.rlib
+/src/k.h
 
