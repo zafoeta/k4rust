@@ -417,3 +417,29 @@ fn test_debug_formatting() {
     let dict = xD(ktn(KS, 0), ktn(KI, 0));
     assert_eq!(format!("{:?}", dict), "K(dict)");
 }
+
+#[test]
+fn test_ffi_integration() {
+    // 1. Compile the FFI example in release mode so it's ready to be loaded by q
+    let build_status = Command::new("cargo")
+        .arg("build")
+        .arg("--release")
+        .arg("--example")
+        .arg("k4rust_test_ffi")
+        .status()
+        .expect("Failed to build k4rust_test_ffi");
+    assert!(build_status.success(), "Failed to compile FFI test library");
+
+    // 2. Spawn Q process running tests/test.q
+    let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let qhome = manifest_dir.join("../..").join("kx");
+    let test_q_path = manifest_dir.join("tests").join("test.q");
+
+    let status = Command::new("q")
+        .env("QHOME", qhome)
+        .arg(test_q_path)
+        .status()
+        .expect("Failed to run Q test script");
+
+    assert!(status.success(), "Q FFI integration tests failed");
+}
