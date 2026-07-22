@@ -128,20 +128,12 @@ pub struct K(*mut ffi::k0);
 
 impl Drop for K {
     fn drop(&mut self) {
-        if !self.0.is_null() {
-            unsafe {
-                ffi::r0(self.0);
-            }
-        }
+        if !self.0.is_null() { unsafe { ffi::r0(self.0); } }
     }
 }
 impl Clone for K {
     fn clone(&self) -> Self {
-        if !self.0.is_null() {
-            unsafe {
-                ffi::r1(self.0);
-            }
-        }
+        if !self.0.is_null() { unsafe { ffi::r1(self.0); } }
         K(self.0)
     }
 }
@@ -233,18 +225,11 @@ impl K {
 
     #[inline(always)]
     pub fn n(&self) -> i64 {
-        if self.0.is_null() {
-            0
-        } else {
-            let t = self.t();
-            if t < 0 {
-                panic!("n() called on an atom (type {}). Atoms do not have a length.", t);
-            }
-            if t == 98 {
-                panic!("n() called on a table (type 98). Use table-specific methods to get row count.");
-            }
-            unsafe { (*self.0).union_data.list.n }
-        }
+        if self.0.is_null() { return 0; }
+        let t = self.t();
+        if t < 0 { panic!("n() called on an atom (type {}). Atoms do not have a length.", t); }
+        if t == 98 { panic!("n() called on a table (type 98). Use table-specific methods to get row count."); }
+        unsafe { (*self.0).union_data.list.n }
     }
 
     #[inline(always)]
@@ -276,16 +261,10 @@ impl K {
 
     #[inline(always)]
     unsafe fn as_slice_mut_unchecked<T>(&self) -> &mut [T] {
-        if self.0.is_null() {
-            return &mut [];
-        }
+        if self.0.is_null() { return &mut []; }
         let t = self.t();
-        if t < 0 && t != -2 {
-            panic!("Slicing method called on an atom (type {}). Atoms cannot be sliced.", t);
-        }
-        if t == 98 {
-            panic!("Slicing method called on a table (type 98). Tables cannot be sliced directly.");
-        }
+        if t < 0 && t != -2 { panic!("Slicing method called on an atom (type {}). Atoms cannot be sliced.", t); }
+        if t == 98 { panic!("Slicing method called on a table (type 98). Tables cannot be sliced directly."); }
         unsafe {
             let ptr = (*self.0).union_data.list.G0.as_ptr() as *mut T;
             let len = (*self.0).union_data.list.n as usize;
@@ -438,11 +417,7 @@ pub fn krr(err: &str) -> K {
 
 pub fn ktn(t: i8, n: i64) -> K {
     let ptr = unsafe { ffi::ktn(t as i32, n) };
-    if ptr.is_null() {
-        krr("wsfull")
-    } else {
-        K(ptr)
-    }
+    if ptr.is_null() { krr("wsfull") } else { K(ptr) }
 }
 
 pub fn ja(x: &mut K, val: *mut std::os::raw::c_void) {
@@ -603,11 +578,7 @@ impl<'a> IpcBuilder<'a> {
             (Some(c), None, Some(cap)) => khpunc(self.hostname, self.port, c, 0, cap),
             (None, None, Some(cap)) => khpunc(self.hostname, self.port, "", 0, cap),
         };
-        if h <= 0 {
-            Err(format!("Connection failed, code: {}", h))
-        } else {
-            Ok(IpcClient { handle: h })
-        }
+        if h <= 0 { Err(format!("Connection failed, code: {}", h)) } else { Ok(IpcClient { handle: h }) }
     }
 }
 
@@ -697,9 +668,7 @@ impl IpcClient {
 
 impl Drop for IpcClient {
     fn drop(&mut self) {
-        if self.handle > 0 {
-            kclose(self.handle);
-        }
+        if self.handle > 0 { kclose(self.handle); }
     }
 }
 
