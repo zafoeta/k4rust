@@ -478,6 +478,13 @@ k4rust_api! {
         let _enc = ymd(2020, 1, 1);
         let _dec = dj(_enc);
 
+        let _ka_i = ka(-KI);
+        let _kpn_s = kpn("test_kpn", 4);
+        let _knt_l = knt(0, ki(0));
+
+        let _kp_unix = kp_from_unix_nanos(1_700_000_000_000_000_000);
+        let _kd_unix = kd_from_unix_days(19_700);
+
         let mut li = ktn(KI, 0);
         ja(&mut li, &123 as *const i32 as *mut _);
         let mut ls = ktn(KS, 0);
