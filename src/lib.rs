@@ -152,13 +152,8 @@ impl K {
         if self.0.is_null() { return K::null(); }
         let t = self.t();
         if t < 0 { return self.clone(); }
-        if t == 98 {
-            let d = std::mem::ManuallyDrop::new(unsafe { K((*self.0).union_data.k) });
-            return xT(d.duplicate());
-        }
-        if t == 99 {
-            return xD(self.xx().duplicate(), self.xy().duplicate());
-        }
+        if t == 98 { return xT(std::mem::ManuallyDrop::new(unsafe { K((*self.0).union_data.k) }).duplicate()); }
+        if t == 99 { return xD(self.xx().duplicate(), self.xy().duplicate()); }
         let n = self.n();
         if t == 0 {
             let r = ktn(0, n);
@@ -420,18 +415,10 @@ pub fn ktn(t: i8, n: i64) -> K {
     if ptr.is_null() { krr("wsfull") } else { K(ptr) }
 }
 
-pub fn ja(x: &mut K, val: *mut std::os::raw::c_void) {
-    unsafe { ffi::ja(&mut x.0, val); }
-}
-pub fn js(x: &mut K, s: ffi::S) {
-    unsafe { ffi::js(&mut x.0, s); }
-}
-pub fn jk(x: &mut K, y: K) {
-    unsafe { ffi::jk(&mut x.0, y.into_raw()); }
-}
-pub fn jv(x: &mut K, y: K) {
-    unsafe { ffi::jv(&mut x.0, y.into_raw()); }
-}
+pub fn ja(x: &mut K, val: *mut std::os::raw::c_void) { unsafe { ffi::ja(&mut x.0, val); } }
+pub fn js(x: &mut K, s: ffi::S) { unsafe { ffi::js(&mut x.0, s); } }
+pub fn jk(x: &mut K, y: K) { unsafe { ffi::jk(&mut x.0, y.into_raw()); } }
+pub fn jv(x: &mut K, y: K) { unsafe { ffi::jv(&mut x.0, y.into_raw()); } }
 
 #[inline(always)] pub fn kB(x: &K) -> &mut [i8] { x.kB() }
 #[inline(always)] pub fn kG(x: &K) -> &mut [u8] { x.kG() }
@@ -505,25 +492,11 @@ pub fn khp(hostname: &str, port: i32) -> i32 {
     unsafe { ffi::khp(hostname_c.as_ptr() as *mut _, port) }
 }
 
-pub fn okx(x: &K) -> i32 {
-    unsafe { ffi::okx(x.0) }
-}
-
-pub fn kclose(socket: i32) {
-    unsafe { ffi::kclose(socket); }
-}
-
-pub fn sd1(d: i32, f: Option<unsafe extern "C" fn(i32) -> *mut ffi::k0>) -> K {
-    unsafe { K(ffi::sd1(d, f)) }
-}
-
-pub fn sd0(d: i32) {
-    unsafe { ffi::sd0(d); }
-}
-
-pub fn sd0x(d: i32, f: i32) {
-    unsafe { ffi::sd0x(d, f); }
-}
+pub fn okx(x: &K) -> i32 { unsafe { ffi::okx(x.0) } }
+pub fn kclose(socket: i32) { unsafe { ffi::kclose(socket); } }
+pub fn sd1(d: i32, f: Option<unsafe extern "C" fn(i32) -> *mut ffi::k0>) -> K { unsafe { K(ffi::sd1(d, f)) } }
+pub fn sd0(d: i32) { unsafe { ffi::sd0(d); } }
+pub fn sd0x(d: i32, f: i32) { unsafe { ffi::sd0x(d, f); } }
 
 /// A safe, RAII-based wrapper for KDB+ IPC client connections.
 /// Automatically closes the socket descriptor when dropped.
@@ -591,34 +564,13 @@ impl IpcClient {
     pub fn handle(&self) -> i32 { self.handle }
 
     /// Connects to a remote KDB+ process.
-    pub fn connect(hostname: &str, port: i32) -> Result<Self, String> {
-        Self::builder(hostname, port).connect()
-    }
+    pub fn connect(hostname: &str, port: i32) -> Result<Self, String> { Self::builder(hostname, port).connect() }
+    pub fn builder<'a>(hostname: &'a str, port: i32) -> IpcBuilder<'a> { IpcBuilder::new(hostname, port) }
 
-    /// Creates a builder for configuring a KDB+ client connection.
-    pub fn builder<'a>(hostname: &'a str, port: i32) -> IpcBuilder<'a> {
-        IpcBuilder::new(hostname, port)
-    }
-
-    /// Evaluates a query on the remote KDB+ process with 0 arguments.
-    pub fn k0(&self, query: &str) -> K {
-        k0(self.handle, query)
-    }
-
-    /// Evaluates a query on the remote KDB+ process with 1 argument.
-    pub fn k1(&self, query: &str, x: K) -> K {
-        k1(self.handle, query, x)
-    }
-
-    /// Evaluates a query on the remote KDB+ process with 2 arguments.
-    pub fn k2(&self, query: &str, x: K, y: K) -> K {
-        k2(self.handle, query, x, y)
-    }
-
-    /// Evaluates a query on the remote KDB+ process with 3 arguments.
-    pub fn k3(&self, query: &str, x: K, y: K, z: K) -> K {
-        k3(self.handle, query, x, y, z)
-    }
+    pub fn k0(&self, query: &str) -> K { k0(self.handle, query) }
+    pub fn k1(&self, query: &str, x: K) -> K { k1(self.handle, query, x) }
+    pub fn k2(&self, query: &str, x: K, y: K) -> K { k2(self.handle, query, x, y) }
+    pub fn k3(&self, query: &str, x: K, y: K, z: K) -> K { k3(self.handle, query, x, y, z) }
 
     /// Evaluates a query with a dynamic number of arguments by packaging them
     /// into a mixed list under the hood and applying them via the KDB+ dot (`.`) operator.
