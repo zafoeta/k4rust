@@ -485,6 +485,36 @@ fn test_duplicate_mixed_list() {
     assert_eq!(dup.kK()[2].kC(), b"hello");
 }
 
+#[test]
+fn test_new_c_api_wrappers_and_epoch_helpers() {
+    // 1. ka and kpn
+    let atom_i = ka(-KI);
+    assert_eq!(atom_i.t(), -KI);
+
+    let str_k = kpn("hello world", 5);
+    assert_eq!(str_k.t(), KC);
+    assert_eq!(str_k.len(), 5);
+    assert_eq!(str_k.kC(), b"hello");
+
+    // 2. ver, gc, setm, m9
+    let v = ver();
+    assert!(v >= 0);
+    let _ = gc(0);
+    let _ = setm(0);
+    m9();
+
+    // 3. Epoch conversions
+    let unix_nanos = 1_700_000_000_000_000_000i64; // ~Nov 2023
+    let kp_k = kp_from_unix_nanos(unix_nanos);
+    assert_eq!(kp_k.t(), -KP);
+    assert_eq!(unix_nanos_from_kp(&kp_k), unix_nanos);
+
+    let unix_days = 19_700i32; // ~Dec 2023
+    let kd_k = kd_from_unix_days(unix_days);
+    assert_eq!(kd_k.t(), -KD);
+    assert_eq!(unix_days_from_kd(&kd_k), unix_days);
+}
+
 
 #[test]
 fn test_ffi_integration() {

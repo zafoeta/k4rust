@@ -318,6 +318,7 @@ pub const WJ: i64 = i64::MAX;
 pub const WE: f32 = f32::INFINITY;
 pub const WF: f64 = f64::INFINITY;
 
+pub fn ka(t: i8) -> K { unsafe { K(ffi::ka(t as i32)) } }
 pub fn kb(val: i32) -> K { unsafe { K(ffi::kb(val)) } }
 pub fn kg(val: i32) -> K { unsafe { K(ffi::kg(val)) } }
 pub fn kh(val: i32) -> K { unsafe { K(ffi::kh(val)) } }
@@ -326,9 +327,8 @@ pub fn kj(val: i64) -> K { unsafe { K(ffi::kj(val)) } }
 pub fn ke(val: f64) -> K { unsafe { K(ffi::ke(val)) } }
 pub fn kf(val: f64) -> K { unsafe { K(ffi::kf(val)) } }
 
-pub fn kp(s: &str) -> K {
-    unsafe { K(ffi::kpn(s.as_ptr() as *mut _, s.len() as i64)) }
-}
+pub fn kp(s: &str) -> K { unsafe { K(ffi::kpn(s.as_ptr() as *mut _, s.len() as i64)) } }
+pub fn kpn(s: &str, n: usize) -> K { unsafe { K(ffi::kpn(s.as_ptr() as *mut _, n as i64)) } }
 
 pub fn ku(val: [u8; 16]) -> K { unsafe { K(ffi::ku(ffi::U { g: val })) } }
 pub fn ks(s: ffi::S) -> K { unsafe { K(ffi::ks(s)) } }
@@ -336,6 +336,15 @@ pub fn kd(x: i32) -> K { unsafe { K(ffi::kd(x)) } }
 pub fn kz(x: f64) -> K { unsafe { K(ffi::kz(x)) } }
 pub fn kt(x: i32) -> K { unsafe { K(ffi::kt(x)) } }
 pub fn ktj(t: i8, x: i64) -> K { unsafe { K(ffi::ktj(t as i32, x)) } }
+
+// KDB+ (2000.01.01) <-> Unix Epoch (1970.01.01) Constants & Helpers
+pub const KDB_EPOCH_OFFSET_DAYS: i32 = 10957;
+pub const KDB_EPOCH_OFFSET_NANOS: i64 = 946_684_800_000_000_000;
+
+pub fn kp_from_unix_nanos(nanos: i64) -> K { ktj(-KP, nanos - KDB_EPOCH_OFFSET_NANOS) }
+pub fn kd_from_unix_days(days: i32) -> K { ktj(-KD, (days - KDB_EPOCH_OFFSET_DAYS) as i64) }
+pub fn unix_nanos_from_kp(x: &K) -> i64 { x.j() + KDB_EPOCH_OFFSET_NANOS }
+pub fn unix_days_from_kd(x: &K) -> i32 { x.i() + KDB_EPOCH_OFFSET_DAYS }
 
 pub fn sn(s: &str) -> *mut ::std::os::raw::c_char { unsafe { ffi::sn(s.as_ptr() as *mut _, s.len() as i32) } }
 pub fn ss(s: &str) -> ffi::S { unsafe { ffi::ss(std::ffi::CString::new(s).unwrap().as_ptr() as *mut _) } }
@@ -351,6 +360,15 @@ pub fn ktn(t: i8, n: i64) -> K {
     let ptr = unsafe { ffi::ktn(t as i32, n) };
     if ptr.is_null() { krr("wsfull") } else { K(ptr) }
 }
+pub fn knt(n: i64, x: K) -> K { unsafe { K(ffi::knt(n, x.into_raw())) } }
+pub fn dot(f: K, x: K) -> K { unsafe { K(ffi::dot(f.into_raw(), x.into_raw())) } }
+
+pub fn gc(j: i64) -> i64 { unsafe { ffi::gc(j) } }
+pub fn m9() { unsafe { ffi::m9(); } }
+pub fn ver() -> i32 { unsafe { ffi::ver() } }
+pub fn setm(m: i32) -> i32 { unsafe { ffi::setm(m) } }
+pub fn ee(x: K) -> K { unsafe { K(ffi::ee(x.into_raw())) } }
+pub fn ssl_info(x: K) -> K { unsafe { K(ffi::sslInfo(x.into_raw())) } }
 
 pub fn ja(x: &mut K, val: *mut std::os::raw::c_void) { unsafe { ffi::ja(&mut x.0, val); } }
 pub fn js(x: &mut K, s: ffi::S) { unsafe { ffi::js(&mut x.0, s); } }
