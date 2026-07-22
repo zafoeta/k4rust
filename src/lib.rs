@@ -204,19 +204,9 @@ impl K {
         ptr
     }
 
-    pub fn type_code(&self) -> i8 {
-        if self.0.is_null() { 0 } else { unsafe { (*self.0).t } }
-    }
-
-    #[inline(always)]
-    pub fn len(&self) -> usize {
-        self.n() as usize
-    }
-
-    #[inline(always)]
-    pub fn t(&self) -> i8 {
-        if self.0.is_null() { 0 } else { unsafe { (*self.0).t } }
-    }
+    pub fn type_code(&self) -> i8 { if self.0.is_null() { 0 } else { unsafe { (*self.0).t } } }
+    #[inline(always)] pub fn len(&self) -> usize { self.n() as usize }
+    #[inline(always)] pub fn t(&self) -> i8 { if self.0.is_null() { 0 } else { unsafe { (*self.0).t } } }
 
     #[inline(always)]
     pub fn n(&self) -> i64 {
@@ -227,32 +217,15 @@ impl K {
         unsafe { (*self.0).union_data.list.n }
     }
 
-    #[inline(always)]
-    pub fn r(&self) -> i32 {
-        if self.0.is_null() { 0 } else { unsafe { (*self.0).r } }
-    }
+    #[inline(always)] pub fn r(&self) -> i32 { if self.0.is_null() { 0 } else { unsafe { (*self.0).r } } }
 
-
-    #[inline(always)]
-    pub fn g(&self) -> u8 { if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.g } } }
-
-    #[inline(always)]
-    pub fn h(&self) -> i16 { if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.h } } }
-
-    #[inline(always)]
-    pub fn i(&self) -> i32 { if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.i } } }
-
-    #[inline(always)]
-    pub fn j(&self) -> i64 { if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.j } } }
-
-    #[inline(always)]
-    pub fn e(&self) -> f32 { if self.0.is_null() { 0.0 } else { unsafe { (*self.0).union_data.e } } }
-
-    #[inline(always)]
-    pub fn f(&self) -> f64 { if self.0.is_null() { 0.0 } else { unsafe { (*self.0).union_data.f } } }
-
-    #[inline(always)]
-    pub fn s(&self) -> *mut std::os::raw::c_char { if self.0.is_null() { std::ptr::null_mut() } else { unsafe { (*self.0).union_data.s } } }
+    #[inline(always)] pub fn g(&self) -> u8 { if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.g } } }
+    #[inline(always)] pub fn h(&self) -> i16 { if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.h } } }
+    #[inline(always)] pub fn i(&self) -> i32 { if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.i } } }
+    #[inline(always)] pub fn j(&self) -> i64 { if self.0.is_null() { 0 } else { unsafe { (*self.0).union_data.j } } }
+    #[inline(always)] pub fn e(&self) -> f32 { if self.0.is_null() { 0.0 } else { unsafe { (*self.0).union_data.e } } }
+    #[inline(always)] pub fn f(&self) -> f64 { if self.0.is_null() { 0.0 } else { unsafe { (*self.0).union_data.f } } }
+    #[inline(always)] pub fn s(&self) -> *mut std::os::raw::c_char { if self.0.is_null() { std::ptr::null_mut() } else { unsafe { (*self.0).union_data.s } } }
 
     #[inline(always)]
     unsafe fn as_slice_mut_unchecked<T>(&self) -> &mut [T] {
@@ -388,27 +361,15 @@ pub fn kz(x: f64) -> K { unsafe { K(ffi::kz(x)) } }
 pub fn kt(x: i32) -> K { unsafe { K(ffi::kt(x)) } }
 pub fn ktj(t: i8, x: i64) -> K { unsafe { K(ffi::ktj(t as i32, x)) } }
 
-pub fn sn(s: &str) -> *mut ::std::os::raw::c_char {
-    unsafe { ffi::sn(s.as_ptr() as *mut _, s.len() as i32) }
-}
-
-pub fn ss(s: &str) -> ffi::S {
-    let c_str = std::ffi::CString::new(s).unwrap();
-    unsafe { ffi::ss(c_str.as_ptr() as *mut _) }
-}
-
-pub fn ns() -> *mut ::std::os::raw::c_char {
-    sn("")
-}
+pub fn sn(s: &str) -> *mut ::std::os::raw::c_char { unsafe { ffi::sn(s.as_ptr() as *mut _, s.len() as i32) } }
+pub fn ss(s: &str) -> ffi::S { unsafe { ffi::ss(std::ffi::CString::new(s).unwrap().as_ptr() as *mut _) } }
+pub fn ns() -> *mut ::std::os::raw::c_char { sn("") }
 
 pub fn xD(x: K, y: K) -> K { unsafe { K(ffi::xD(x.into_raw(), y.into_raw())) } }
 pub fn xT(x: K) -> K { unsafe { K(ffi::xT(x.into_raw())) } }
 pub fn ktd(x: K) -> K { unsafe { K(ffi::ktd(x.into_raw())) } }
 
-pub fn krr(err: &str) -> K {
-    let sym = ss(err);
-    K(unsafe { ffi::krr(sym) })
-}
+pub fn krr(err: &str) -> K { K(unsafe { ffi::krr(ss(err)) }) }
 
 pub fn ktn(t: i8, n: i64) -> K {
     let ptr = unsafe { ffi::ktn(t as i32, n) };
