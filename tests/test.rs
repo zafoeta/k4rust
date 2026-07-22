@@ -460,9 +460,29 @@ fn test_table_slice_panic() {
     keys.kS()[0] = ss("col1");
     let col = ktn(KI, 5);
     let vals = ktn(0, 1);
-    vals.kK()[0] = col;
+    unsafe {
+        let dest_ptr = (*vals.as_raw()).union_data.list.G0.as_ptr() as *mut *mut ffi::k0;
+        dest_ptr.write(col.into_raw());
+    }
     let table = xT(xD(keys, vals));
     let _ = table.kK();
+}
+
+#[test]
+fn test_duplicate_mixed_list() {
+    let mixed = ktn(0, 3);
+    unsafe {
+        let dest_ptr = (*mixed.as_raw()).union_data.list.G0.as_ptr() as *mut *mut ffi::k0;
+        dest_ptr.add(0).write(ki(10).into_raw());
+        dest_ptr.add(1).write(kf(20.5).into_raw());
+        dest_ptr.add(2).write(kp("hello").into_raw());
+    }
+    let dup = mixed.duplicate();
+    assert_eq!(dup.t(), 0);
+    assert_eq!(dup.len(), 3);
+    assert_eq!(dup.kK()[0].i(), 10);
+    assert_eq!(dup.kK()[1].f(), 20.5);
+    assert_eq!(dup.kK()[2].kC(), b"hello");
 }
 
 

@@ -167,9 +167,12 @@ impl K {
         } else if t == 0 {
             let res = ktn(0, n);
             let src_slice = self.kK();
-            let dest_slice = res.kK();
-            for i in 0..(n as usize) {
-                dest_slice[i] = src_slice[i].clone();
+            unsafe {
+                let dest_ptr = (*res.0).union_data.list.G0.as_ptr() as *mut *mut ffi::k0;
+                for i in 0..(n as usize) {
+                    let cloned = src_slice[i].clone();
+                    dest_ptr.add(i).write(cloned.into_raw());
+                }
             }
             res
         } else if t == 99 {
@@ -436,13 +439,9 @@ pub fn xD(x: K, y: K) -> K { unsafe { K(ffi::xD(x.into_raw(), y.into_raw())) } }
 pub fn xT(x: K) -> K { unsafe { K(ffi::xT(x.into_raw())) } }
 pub fn ktd(x: K) -> K { unsafe { K(ffi::ktd(x.into_raw())) } }
 
-static ERROR_CACHE: std::sync::OnceLock<std::sync::Mutex<std::collections::HashMap<String, std::ffi::CString>>> = std::sync::OnceLock::new();
-
 pub fn krr(err: &str) -> K {
-    let cache = ERROR_CACHE.get_or_init(|| std::sync::Mutex::new(std::collections::HashMap::new()));
-    let mut map = cache.lock().unwrap();
-    let c_str = map.entry(err.to_string()).or_insert_with(|| std::ffi::CString::new(err).unwrap());
-    K(unsafe { ffi::krr(c_str.as_ptr() as *mut _) })
+    let sym = ss(err);
+    K(unsafe { ffi::krr(sym) })
 }
 
 pub fn ktn(t: i8, n: i64) -> K {
@@ -687,9 +686,11 @@ impl IpcClient {
 
         let n = args.len();
         let al = ktn(0, n as i64);
-        let s = al.kK();
-        for (i, arg) in args.into_iter().enumerate() {
-            s[i] = arg;
+        unsafe {
+            let dest_ptr = (*al.0).union_data.list.G0.as_ptr() as *mut *mut ffi::k0;
+            for (i, arg) in args.into_iter().enumerate() {
+                dest_ptr.add(i).write(arg.into_raw());
+            }
         }
         
         let qk = kp(query);
