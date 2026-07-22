@@ -157,14 +157,18 @@ impl K {
     }
 
     pub fn duplicate(&self) -> K {
-        if self.0.is_null() {
-            return K::null();
-        }
+        if self.0.is_null() { return K::null(); }
         let t = self.t();
+        if t < 0 { return self.clone(); }
+        if t == 98 {
+            let d = std::mem::ManuallyDrop::new(unsafe { K((*self.0).union_data.k) });
+            return xT(d.duplicate());
+        }
+        if t == 99 {
+            return xD(self.xx().duplicate(), self.xy().duplicate());
+        }
         let n = self.n();
-        if t < 0 {
-            self.clone()
-        } else if t == 0 {
+        if t == 0 {
             let r = ktn(0, n);
             let src = self.kK();
             unsafe {
@@ -174,13 +178,6 @@ impl K {
                 }
             }
             r
-        } else if t == 99 {
-            let k = self.xx().duplicate();
-            let v = self.xy().duplicate();
-            xD(k, v)
-        } else if t == 98 {
-            let d = std::mem::ManuallyDrop::new(unsafe { K((*self.0).union_data.k) });
-            xT(d.duplicate())
         } else {
             let r = ktn(t, n);
             unsafe {
@@ -192,8 +189,6 @@ impl K {
                     7 | 12 | 15 | 16 => 8,
                     8 => 4,
                     9 => 8,
-                    // Type 11 (KS): symbol pointers are interned by q's `ss()`,
-                    // so a shallow pointer copy is correct — the intern table owns the strings.
                     11 => std::mem::size_of::<*mut std::os::raw::c_char>(),
                     _ => 1,
                 };
