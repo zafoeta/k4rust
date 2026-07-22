@@ -139,14 +139,8 @@ impl Clone for K {
 }
 
 impl K {
-    #[doc(hidden)]
-    pub unsafe fn __from_raw(ptr: *mut ffi::k0) -> Self {
-        Self(ptr)
-    }
-
-    pub fn as_raw(&self) -> *mut ffi::k0 {
-        self.0
-    }
+    #[doc(hidden)] pub unsafe fn __from_raw(ptr: *mut ffi::k0) -> Self { Self(ptr) }
+    pub fn as_raw(&self) -> *mut ffi::k0 { self.0 }
 
     pub fn duplicate(&self) -> K {
         if self.0.is_null() { return K::null(); }
@@ -187,22 +181,9 @@ impl K {
         }
     }
 
-    pub fn make_mut(&mut self) {
-        if self.r() > 0 {
-            let k = self.duplicate();
-            *self = k;
-        }
-    }
-
-    pub fn null() -> Self {
-        Self(std::ptr::null_mut())
-    }
-
-    pub fn into_raw(mut self) -> *mut ffi::k0 {
-        let ptr = self.0;
-        self.0 = std::ptr::null_mut();
-        ptr
-    }
+    pub fn make_mut(&mut self) { if self.r() > 0 { *self = self.duplicate(); } }
+    pub fn null() -> Self { Self(std::ptr::null_mut()) }
+    pub fn into_raw(mut self) -> *mut ffi::k0 { let ptr = self.0; self.0 = std::ptr::null_mut(); ptr }
 
     pub fn type_code(&self) -> i8 { if self.0.is_null() { 0 } else { unsafe { (*self.0).t } } }
     #[inline(always)] pub fn len(&self) -> usize { self.n() as usize }
@@ -483,22 +464,9 @@ impl<'a> IpcBuilder<'a> {
     }
 
     /// Sets the credentials (username:password) for the connection.
-    pub fn creds(mut self, creds: &'a str) -> Self {
-        self.creds = Some(creds);
-        self
-    }
-
-    /// Sets the connection timeout in milliseconds.
-    pub fn timeout(mut self, timeout_ms: i32) -> Self {
-        self.timeout_ms = Some(timeout_ms);
-        self
-    }
-
-    /// Sets the capability flag (e.g., capability settings like TLS).
-    pub fn capability(mut self, capability: i32) -> Self {
-        self.capability = Some(capability);
-        self
-    }
+    pub fn creds(mut self, creds: &'a str) -> Self { self.creds = Some(creds); self }
+    pub fn timeout(mut self, timeout_ms: i32) -> Self { self.timeout_ms = Some(timeout_ms); self }
+    pub fn capability(mut self, capability: i32) -> Self { self.capability = Some(capability); self }
 
     /// Establishes the connection and returns an `IpcClient`.
     pub fn connect(self) -> Result<IpcClient, String> {
