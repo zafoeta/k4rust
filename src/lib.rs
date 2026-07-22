@@ -541,10 +541,7 @@ impl IpcClient {
         k2(self.handle, "{(value x) . y}", qk, al)
     }
 
-    /// Verifies the handshake response.
-    pub fn okx(&self, x: &K) -> bool {
-        okx(x) != 0
-    }
+    pub fn okx(&self, x: &K) -> bool { okx(x) != 0 }
 }
 
 impl Drop for IpcClient {
