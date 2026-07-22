@@ -127,15 +127,10 @@ pub mod ffi {
 pub struct K(*mut ffi::k0);
 
 impl Drop for K {
-    fn drop(&mut self) {
-        if !self.0.is_null() { unsafe { ffi::r0(self.0); } }
-    }
+    fn drop(&mut self) { if !self.0.is_null() { unsafe { ffi::r0(self.0); } } }
 }
 impl Clone for K {
-    fn clone(&self) -> Self {
-        if !self.0.is_null() { unsafe { ffi::r1(self.0); } }
-        K(self.0)
-    }
+    fn clone(&self) -> Self { if !self.0.is_null() { unsafe { ffi::r1(self.0); } } K(self.0) }
 }
 
 impl K {
@@ -545,9 +540,7 @@ impl IpcClient {
 }
 
 impl Drop for IpcClient {
-    fn drop(&mut self) {
-        if self.handle > 0 { kclose(self.handle); }
-    }
+    fn drop(&mut self) { if self.handle > 0 { kclose(self.handle); } }
 }
 
 
