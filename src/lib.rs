@@ -165,29 +165,26 @@ impl K {
         if t < 0 {
             self.clone()
         } else if t == 0 {
-            let res = ktn(0, n);
-            let src_slice = self.kK();
+            let r = ktn(0, n);
+            let src = self.kK();
             unsafe {
-                let dest_ptr = (*res.0).union_data.list.G0.as_ptr() as *mut *mut ffi::k0;
+                let dst = (*r.0).union_data.list.G0.as_ptr() as *mut *mut ffi::k0;
                 for i in 0..(n as usize) {
-                    let cloned = src_slice[i].clone();
-                    dest_ptr.add(i).write(cloned.into_raw());
+                    dst.add(i).write(src[i].clone().into_raw());
                 }
             }
-            res
+            r
         } else if t == 99 {
-            let keys = self.xx().duplicate();
-            let vals = self.xy().duplicate();
-            xD(keys, vals)
+            let k = self.xx().duplicate();
+            let v = self.xy().duplicate();
+            xD(k, v)
         } else if t == 98 {
-            let dict_ptr = unsafe { (*self.0).union_data.k };
-            let dict = std::mem::ManuallyDrop::new(K(dict_ptr));
-            let new_dict = dict.duplicate();
-            xT(new_dict)
+            let d = std::mem::ManuallyDrop::new(unsafe { K((*self.0).union_data.k) });
+            xT(d.duplicate())
         } else {
-            let res = ktn(t, n);
+            let r = ktn(t, n);
             unsafe {
-                let elem_size = match t {
+                let sz = match t {
                     1 | 4 | 10 => 1,
                     2 => 16,
                     5 => 2,
@@ -200,18 +197,18 @@ impl K {
                     11 => std::mem::size_of::<*mut std::os::raw::c_char>(),
                     _ => 1,
                 };
-                let src_ptr = (*self.0).union_data.list.G0.as_ptr();
-                let dest_ptr = (*res.0).union_data.list.G0.as_ptr() as *mut u8;
-                std::ptr::copy_nonoverlapping(src_ptr, dest_ptr, (n as usize) * elem_size);
+                let src = (*self.0).union_data.list.G0.as_ptr();
+                let dst = (*r.0).union_data.list.G0.as_ptr() as *mut u8;
+                std::ptr::copy_nonoverlapping(src, dst, (n as usize) * sz);
             }
-            res
+            r
         }
     }
 
     pub fn make_mut(&mut self) {
         if self.r() > 0 {
-            let new_k = self.duplicate();
-            *self = new_k;
+            let k = self.duplicate();
+            *self = k;
         }
     }
 
@@ -687,9 +684,9 @@ impl IpcClient {
         let n = args.len();
         let al = ktn(0, n as i64);
         unsafe {
-            let dest_ptr = (*al.0).union_data.list.G0.as_ptr() as *mut *mut ffi::k0;
+            let dst = (*al.0).union_data.list.G0.as_ptr() as *mut *mut ffi::k0;
             for (i, arg) in args.into_iter().enumerate() {
-                dest_ptr.add(i).write(arg.into_raw());
+                dst.add(i).write(arg.into_raw());
             }
         }
         
