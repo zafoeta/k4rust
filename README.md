@@ -12,7 +12,7 @@ Writing kdb+ shared library extensions in C using `k.h` has a distinct functiona
 
 By keeping the syntax and conventions nearly identical to the native C API, developers can trivially port existing C libraries to Rust, gaining memory safety guarantees, automatic ref-counting, and panic isolation without having to adopt a completely foreign coding style.
 
-For full details on native C API functions, macros, and header definitions, refer to the official [KX C API Documentation on code.kx.com](https://code.kx.com/q/interfaces/c-client-for-q/).
+For full details on native C API functions, macros, and header definitions, refer to the official [KX C API Reference](https://code.kx.com/q/interfaces/c-client-for-q/#c-api-functions).
 
 ---
 
@@ -220,7 +220,6 @@ slice[0] = 999;
 
 ## Documentation & References
 
-* [KX C API Documentation on code.kx.com](https://code.kx.com/q/interfaces/c-client-for-q/)
+* [KX C API Reference](https://code.kx.com/q/interfaces/c-client-for-q/#c-api-functions)
 * [KX Data Types Reference](https://code.kx.com/q/basics/datatypes/)
-* [KX C API Function Reference](https://code.kx.com/q/interfaces/c-client-for-q/#c-api-functions)
 
