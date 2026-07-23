@@ -86,9 +86,9 @@ When KDB+ calls your FFI function, it retains ownership of the input parameters 
 If your function needs to return one of the input parameters directly, or store it in another container (like a dictionary or list), you must increment its reference count. In `k4rust`, it is idiomatic to call `r1(y)` (which wraps `y.clone()`):
 
 ```rust
-pub fn return_input_if_valid(x: K, y: K) -> K {
+pub fn return_input_if_valid(x: &K, y: &K) -> K {
     if x.n() <= 0 { return krr("length"); }
-    r1(y) // Calls r1 under the hood to safely extend the lifetime
+    r1(y) // Increments KDB reference count via r1, returning an owned K
 }
 ```
 
