@@ -134,7 +134,7 @@ The table below outlines how native `k.h` macros and functions map to `k4rust` c
 
 | Category | C Macro / Function (`k.h`) | `k4rust` Method Syntax | `k4rust` Free Function | Status / Notes |
 |---|---|---|---|---|
-| **Header Access** | `x->t` / `xt` | `x.t()`, `x.type_code()` | N/A | Supported |
+| **Header Access** | `x->t` / `xt` | `x.t()` | N/A | Supported |
 | | x->n / xn | x.n() / x.len() | N/A | Supported |
 | | x->r / xr | x.r() | N/A | Supported |
 | **Vector Slices** | `kB(x)` | `x.kB()` | `kB(x)` | Supported (`&[u8]`) |

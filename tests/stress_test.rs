@@ -49,10 +49,10 @@ fn stress_test_nested_dicts_and_tables() {
     println!("[STRESS] Starting 50,000 iterations of nested Table and Dict operations...");
     
     for _ in 0..50_000 {
-        let sym_keys = ktn(KS, 3);
-        js(&mut sym_keys.clone(), ss("time"));
-        js(&mut sym_keys.clone(), ss("sym"));
-        js(&mut sym_keys.clone(), ss("price"));
+        let mut sym_keys = ktn(KS, 0);
+        js(&mut sym_keys, ss("time"));
+        js(&mut sym_keys, ss("sym"));
+        js(&mut sym_keys, ss("price"));
         
         let col1 = ktn(KP, 10);
         let col2 = ktn(KS, 10);

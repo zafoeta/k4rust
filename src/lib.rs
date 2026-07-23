@@ -180,7 +180,6 @@ impl K {
     pub fn null() -> Self { Self(std::ptr::null_mut()) }
     pub fn into_raw(mut self) -> *mut ffi::k0 { let ptr = self.0; self.0 = std::ptr::null_mut(); ptr }
 
-    pub fn type_code(&self) -> i8 { if self.0.is_null() { 0 } else { unsafe { (*self.0).t } } }
     #[inline(always)] pub fn len(&self) -> usize { self.n() as usize }
     #[inline(always)] pub fn t(&self) -> i8 { if self.0.is_null() { 0 } else { unsafe { (*self.0).t } } }
 

@@ -321,6 +321,29 @@ fn test_dicts_and_tables() {
     let dict = xD(keys, vals);
     assert_eq!(dict.t(), XD);
 
+    // Verify xx() (keys) and xy() (values) accessors on dictionary
+    let d_keys = dict.xx();
+    let d_vals = dict.xy();
+    assert_eq!(d_keys.t(), KS);
+    assert_eq!(d_keys.len(), 2);
+    assert_eq!(d_keys.kS()[0], s_a);
+    assert_eq!(d_keys.kS()[1], s_b);
+
+    assert_eq!(d_vals.t(), KI);
+    assert_eq!(d_vals.len(), 2);
+    assert_eq!(d_vals.kI()[0], 100);
+    assert_eq!(d_vals.kI()[1], 200);
+
+    // Verify top-level function wrappers xx(&dict) and xy(&dict)
+    assert_eq!(xx(&dict).t(), KS);
+    assert_eq!(xy(&dict).t(), KI);
+
+    // Verify dict duplication (duplicate uses xx and xy under the hood)
+    let dup_dict = dict.duplicate();
+    assert_eq!(dup_dict.t(), XD);
+    assert_eq!(dup_dict.xx().kS()[0], s_a);
+    assert_eq!(dup_dict.xy().kI()[0], 100);
+
     let table = xT(dict.clone());
     assert_eq!(table.t(), XT);
 
