@@ -69,7 +69,7 @@ k4rust_api! {
 1. **Zero FFI & Macro Boilerplate**: You never need to write `#[no_mangle] pub unsafe extern "C" fn`, raw pointer casts (`*mut k0`), or manual `catch_unwind` panic boundaries for every single exported function. The `k4rust_api!` macro handles all FFI mechanics declaratively.
 2. **Zero `unsafe` Blocks in Extension Logic**: Pointer dereferencing, alignment checks, and memory boundary validations are fully encapsulated inside `k4rust`'s safe abstractions. You write pure, 100% safe Rust.
 3. **Direct Slice Access over Verbose Enum Matching**: Other Rust wrappers force you to navigate heavy nested enum patterns (`match obj { KData::LongVector(v) => ... }`) or clone data into allocated Rust `Vec`s. `k4rust` gives you direct, clean slice access (`x.kJ()`, `x.kF()`) with zero runtime overhead and zero boilerplate clutter.
-4. **Automatic Memory & Refcount Cleanup (RAII)**: `K` implements `Drop` (calling `r0`) and `Clone` (calling `r1`). You never have to manually track reference counts or worry about memory leaks on early return paths.
+4. **Automatic Memory Cleanup (RAII)**: `K` implements `Drop` (calling `r0`) and `Clone` (calling `r1`). Intermediate allocations are automatically cleaned up when local variables go out of scope or return early, eliminating manual `r0` calls and preventing memory leaks on error paths.
 
 ---
 
