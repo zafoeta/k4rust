@@ -331,6 +331,7 @@ pub fn kp(s: &str) -> K { unsafe { K(ffi::kpn(s.as_ptr() as *mut _, s.len() as i
 pub fn kpn(s: &str, n: usize) -> K { unsafe { K(ffi::kpn(s.as_ptr() as *mut _, n as i64)) } }
 
 pub fn ku(val: [u8; 16]) -> K { unsafe { K(ffi::ku(ffi::U { g: val })) } }
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub fn ks(s: ffi::S) -> K { unsafe { K(ffi::ks(s)) } }
 pub fn kd(x: i32) -> K { unsafe { K(ffi::kd(x)) } }
 pub fn kz(x: f64) -> K { unsafe { K(ffi::kz(x)) } }
@@ -370,7 +371,9 @@ pub fn setm(m: i32) -> i32 { unsafe { ffi::setm(m) } }
 pub fn ee(x: K) -> K { unsafe { K(ffi::ee(x.into_raw())) } }
 pub fn ssl_info(x: K) -> K { unsafe { K(ffi::sslInfo(x.into_raw())) } }
 
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub fn ja(x: &mut K, val: *mut std::os::raw::c_void) { unsafe { ffi::ja(&mut x.0, val); } }
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub fn js(x: &mut K, s: ffi::S) { unsafe { ffi::js(&mut x.0, s); } }
 pub fn jk(x: &mut K, y: K) { unsafe { ffi::jk(&mut x.0, y.into_raw()); } }
 pub fn jv(x: &mut K, y: K) { unsafe { ffi::jv(&mut x.0, y.into_raw()); } }

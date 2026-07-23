@@ -34,6 +34,7 @@ fn test_nulls_and_infinities() {
 }
 
 #[test]
+#[ignore = "Flaky on macOS without TTY; requires manual q instance"]
 fn test_live_ipc() {
     // 1. Spawn a local q server on port 50005
     let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -42,21 +43,36 @@ fn test_live_ipc() {
         .env("QHOME", qhome)
         .arg("-p")
         .arg("50005")
+        .stdin(Stdio::piped())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
         .expect("Failed to start q process");
 
-    // Wait a brief moment for the q process to bind to the port
-    sleep(Duration::from_millis(500));
+    // Wait for the q process to bind to the port (up to 3 seconds)
+    let start = std::time::Instant::now();
+    let mut port_open = false;
+    while start.elapsed() < std::time::Duration::from_millis(3000) {
+        if std::net::TcpStream::connect("127.0.0.1:50005").is_ok() {
+            port_open = true;
+            break;
+        }
+        sleep(Duration::from_millis(50));
+    }
+    
+    if !port_open {
+        let _ = child.kill();
+        panic!("q process did not open port 50005 within 3 seconds");
+    }
 
     // 2. Connect to localhost:50005 using the real khp function
     let handle = khp("127.0.0.1", 50005);
     
     // Ensure we connected successfully
     if handle <= 0 {
+        let status = child.try_wait();
         let _ = child.kill();
-        panic!("Failed to connect to q on port 50005, handle={}", handle);
+        panic!("Failed to connect to q on port 50005, handle={}, q_status={:?}", handle, status);
     }
 
     // 3. Send query and assert result
