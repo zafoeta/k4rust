@@ -135,8 +135,8 @@ The table below outlines how native `k.h` macros and functions map to `k4rust` c
 | Category | C Macro / Function (`k.h`) | `k4rust` Method Syntax | `k4rust` Free Function | Status / Notes |
 |---|---|---|---|---|
 | **Header Access** | `x->t` / `xt` | `x.t()` | N/A | Supported |
-| | x->n / xn | x.n() / x.len() | N/A | Supported |
-| | x->r / xr | x.r() | N/A | Supported |
+| | `x->n` / `xn` | `x.n()` / `x.len()` | N/A | Supported |
+| | `x->r` / `xr` | `x.r()` | N/A | Supported |
 | **Vector Slices** | `kB(x)` | `x.kB()` | `kB(x)` | Supported (`&mut [i8]`) |
 | | `kG(x)` / `kC(x)` | `x.kG()` / `x.kC()` | `kG(x)` / `kC(x)` | Supported (`&mut [u8]`) |
 | | `kH(x)` | `x.kH()` | `kH(x)` | Supported (`&[i16]`) |
@@ -179,20 +179,20 @@ The table below outlines how native `k.h` macros and functions map to `k4rust` c
 
 ---
 
-## The `k4rust_api!` Macro
+## Exporting Functions with `k4rust_api!`
 
-The `k4rust_api!` declarative macro is a **required key concept** for all functions exported to kdb+. It handles the translation layer between Rust's safe abstractions and kdb+'s raw C FFI boundary:
+The `k4rust_api!` macro is the entry point for all native library functions exported to kdb+. It automates the raw C FFI translation layer:
 
-1. **FFI Signature Generation**: Adds `#[unsafe(no_mangle)]` and converts signatures to `pub unsafe extern "C" fn` using raw pointers (`*mut ffi::k0`).
-2. **Automatic Parameter Wrapping**: Wraps input arguments inside `std::mem::ManuallyDrop` to prevent Rust's compiler from dropping them prematurely when the function finishes (kdb+ retains ownership of parameters).
-3. **Panic Catching**: Catches any Rust panic that occurs inside your function body and returns a clean `krr("panic")` to KDB+, preventing a Rust panic from crashing the entire host `q` database process.
+- **FFI Signature Generation**: Emits `#[unsafe(no_mangle)] pub unsafe extern "C" fn` signatures using raw pointers (`*mut ffi::k0`).
+- **Parameter Wrapping**: Automatically wraps raw C inputs in `std::mem::ManuallyDrop` to ensure kdb+ retains argument ownership while presenting read-only `&K` references inside your function body.
+- **Panic Boundary**: Catches any internal Rust panic via `catch_unwind` and returns `'panic` to kdb+, preventing Rust panics from unwinding into host `q` process space.
 
 ---
 
-## FFI Ownership Gotchas
+## FFI Ownership Patterns & Gotchas
 
 ### Scenario 1: Mixed List Packaging
-When creating a mixed list (type 0) containing input arguments, the developer must remember to clone the inputs to increment their reference counts:
+When inserting FFI parameters into a new mixed list (type 0), increment the reference count so kdb+ and the list both hold valid references:
 ```rust
 k4rust_api! {
     pub fn package_results(x: K, y: K) -> K {
@@ -204,7 +204,7 @@ k4rust_api! {
     }
 }
 ```
-* **Compile-Time Safety & C Idioms**: Since `K`'s inner pointer is private, a developer cannot write `K(x.0)` or bypass the reference counting. The compiler guarantees that assignment to a list element requires either `r1(x)` or `x.clone()`, preventing double-free segmentation faults at compile-time.
+Because `K`'s inner pointer is private, the compiler enforces that list element assignment requires an owned `K` (via `r1(x)` or `x.clone()`), preventing double-free segfaults.
 
 ### Scenario 2: Mutating Shared Vectors In-Place
 In kdb+, lists are shared reference-counted objects. If you clone a handle `let mut cloned_x = x.clone();`, you have duplicated the handle (reference count is now `> 1`), but the underlying data is still shared.
