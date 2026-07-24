@@ -86,7 +86,7 @@ When KDB+ calls your FFI function, it retains ownership of the input parameters 
 If your function needs to return one of the input parameters directly, or store it in another container (like a dictionary or list), you must increment its reference count. In `k4rust`, it is idiomatic to call `r1(y)` (which wraps `y.clone()`):
 
 ```rust
-pub fn return_input_if_valid(x: &K, y: &K) -> K {
+pub fn return_input_if_valid(x: K, y: K) -> K {
     if x.n() <= 0 { return krr("length"); }
     r1(y) // Increments KDB reference count via r1, returning an owned K
 }
@@ -137,8 +137,8 @@ The table below outlines how native `k.h` macros and functions map to `k4rust` c
 | **Header Access** | `x->t` / `xt` | `x.t()` | N/A | Supported |
 | | x->n / xn | x.n() / x.len() | N/A | Supported |
 | | x->r / xr | x.r() | N/A | Supported |
-| **Vector Slices** | `kB(x)` | `x.kB()` | `kB(x)` | Supported (`&[u8]`) |
-| | `kG(x)` / `kC(x)` | `x.kG()` / `x.kC()` | `kG(x)` / `kC(x)` | Supported |
+| **Vector Slices** | `kB(x)` | `x.kB()` | `kB(x)` | Supported (`&mut [i8]`) |
+| | `kG(x)` / `kC(x)` | `x.kG()` / `x.kC()` | `kG(x)` / `kC(x)` | Supported (`&mut [u8]`) |
 | | `kH(x)` | `x.kH()` | `kH(x)` | Supported (`&[i16]`) |
 | | `kI(x)` | `x.kI()` | `kI(x)` | Supported (`&[i32]`) |
 | | `kJ(x)` | `x.kJ()` | `kJ(x)` | Supported (`&[i64]`) |
@@ -157,14 +157,14 @@ The table below outlines how native `k.h` macros and functions map to `k4rust` c
 | **List Indexing** | `xx` / `xy` | `x.xx()` / `x.xy()` | `xx(x)` / `xy(x)` | Supported |
 | **Constructors** | `kb(x)` / `kg(x)` / `kh(x)` | N/A | `kb(x)` / `kg(x)` / `kh(x)` | Supported |
 | | `ki(x)` / `kj(x)` / `ke(x)` / `kf(x)` | N/A | `ki(x)` / `kj(x)` / `ke(x)` / `kf(x)` | Supported |
-| | `kp(s)` / `kpn(s, n)` | N/A | `kp(s)` | Supported (takes standard Rust `&str`) |
+| | `kp(s)` / `kpn(s, n)` | N/A | `kp(s)` / `kpn(s, n)` | Supported (takes standard Rust `&str`) |
 | | `ks(s)` | N/A | `ks(s)` | Supported (takes raw `S`); use `ss("sym")` to intern |
 | | `kd(x)` / `kz(x)` / `kt(x)` / `ktj(x)` | N/A | `kd(x)` / `kz(x)` / `kt(x)` / `ktj(t, x)` | Supported temporal constructors |
 | | `ku(uuid)` | N/A | `ku(uuid)` | Supported (GUID/UUID) |
 | | `ktn(type, len)` | N/A | `ktn(type, len)` | Supported |
 | | `krr(error)` | N/A | `krr(error)` | Supported (thread-safe error cache) |
 | **Memory Management** | `r0(x)` | Handled via drop | N/A | Supported (automatic `Drop`) |
-| | `r1(x)` | N/A | `r1(x)` | Supported (safe wrapper, calls `x.clone()`) |
+| | `r1(x)` | `x.clone()` | `r1(x)` | Supported (safe wrapper, calls `x.clone()`) |
 | **List Appenders** | `ja(x, ptr)` / `js(x, s)` | N/A | `ja(x, ptr)` / `js(x, s)` | Supported (appends element in-place) |
 | | `jk(x, y)` / `jv(x, y)` | N/A | `jk(x, y)` / `jv(x, y)` | Supported (appends list/value in-place) |
 | **Event Loop** | `sd1(d, f)` | N/A | `sd1(d, f)` | Supported |
